@@ -32,7 +32,7 @@ function install_node() {
     fi
 
 	# 更新系统
-	sudo apt update && sudo apt install -y curl git wget htop tmux build-essential jq make lz4 gcc unzip liblz4-tool
+	sudo apt update && sudo apt install -y curl git wget htop tmux build-essential jq make lz4 gcc unzip liblz4-tool clang cmake build-essential screen cargo
 
     # 安装Go
     sudo rm -rf /usr/local/go
@@ -192,16 +192,6 @@ function start_node(){
 }
 
 function install_storage_node() {
-
-    sudo apt-get update
-    sudo apt-get install clang cmake build-essential git screen cargo -y
-
-	# 安装Go
-    sudo rm -rf /usr/local/go
-    curl -L https://go.dev/dl/go1.22.0.linux-amd64.tar.gz | sudo tar -xzf - -C /usr/local
-    echo 'export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin' >> $HOME/.bash_profile
-    export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin
-    source $HOME/.bash_profile
  
 	# 克隆仓库
 	git clone https://github.com/0glabs/0g-storage-node.git
@@ -253,12 +243,12 @@ function main_menu() {
         echo "8. 查看日志"
         echo "9. 停止节点"
         echo "10. 启动节点"
-        echo "---------------存储节点相关选项----------------"
+        echo "---------------存储节点相关选项---------------"
         echo "11. 部署存储节点"
         echo "12. 查看存储节点日志"
         echo "13. 停止存储节点"
         echo "14. 启动存储节点"
-        echo "--------------------其他---------------------"
+        echo "--------------------其他--------------------"
         echo "15. 卸载节点"
         echo "0. 退出脚本exit"
         read -p "请输入选项: " OPTION
