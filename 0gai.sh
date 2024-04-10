@@ -223,7 +223,7 @@ function start_storage_node(){
 
 function view_storage_logs(){
 	current_date=$(date +%Y-%m-%d)
-	tail -f /0g-storage-node/run/log/zgs.log.$current_date
+	tail -f $HOME/0g-storage-node/run/log/zgs.log.$current_date
 }
 
 # 主菜单
