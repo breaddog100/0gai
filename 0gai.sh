@@ -139,6 +139,8 @@ function uninstall_node() {
 function add_wallet() {
 	read -p "请输入钱包名称: " wallet_name
     evmosd keys add "$wallet_name"
+    echo "EVM钱包地址，用于领水："
+    echo "0x$(evmosd debug addr $(evmosd keys show $wallet_name -a) | grep hex | awk '{print $3}')"
 }
 
 # 导入钱包
@@ -206,8 +208,6 @@ function install_storage_node() {
 	#后台运行
 	cd run
 	screen -dmS zgs_node_session ../target/release/zgs_node --config config.toml
-	
-	echo 'tail -f /0g-storage-node/run/log可以查看日志'
 	echo '====================== 安装完成 ==========================='
 	
 }
@@ -222,7 +222,8 @@ function start_storage_node(){
 }
 
 function view_storage_logs(){
-	echo 'tail -f /0g-storage-node/run/log可以查看日志'
+	current_date=$(date +%Y-%m-%d)
+	echo 'tail -f /0g-storage-node/run/log/zgs.log.$current_date'
 }
 
 # 主菜单
