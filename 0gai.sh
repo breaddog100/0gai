@@ -98,15 +98,13 @@ function install_node() {
     mv $HOME/.evmosd/priv_validator_state.json.backup $HOME/.evmosd/data/priv_validator_state.json
 
     # 使用 pm2 重启 evmosd 服务并跟踪日志
-    pm2 restart evmosd
+    pm2 start evmosd -- start
     pm2 logs evmosd
 
     # 检查节点的同步状态
     evmosd status | jq .SyncInfo
-
     echo '====================== 安装完成 ==========================='
-    echo '安装完成请重新连接VPS，以启用对应快捷键功能'
-    
+
 }
 
 # 查看0gai 服务状态
@@ -190,7 +188,7 @@ function stop_node(){
 }
 
 function start_node(){
-	pm2 start evmosd
+	pm2 start evmosd -- start
 }
 
 function install_storage_node() {
