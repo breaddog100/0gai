@@ -178,7 +178,7 @@ function add_validator() {
 	  --from=$wallet_name \
 	  --identity="" \
 	  --website="" \
-	  --details="suport by breaddog" \
+	  --details="Support by breaddog" \
 	  --gas=500000 \
 	  --gas-prices=99999aevmos \
 	  -y
@@ -228,6 +228,7 @@ function view_storage_logs(){
 
 # 主菜单
 function main_menu() {
+    while true; do
         clear
         echo "===============0gAI一键部署脚本==============="
     	echo "BreadDog出品，电报：https://t.me/breaddog"
@@ -273,6 +274,9 @@ function main_menu() {
         0) echo "退出脚本。"; exit 0 ;;
 	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
 	    esac
+	    echo "按任意键返回主菜单..."
+        read -n 1
+    done
 }
 
 # 显示主菜单
