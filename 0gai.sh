@@ -226,6 +226,13 @@ function view_storage_logs(){
 	tail -f $HOME/0g-storage-node/run/log/zgs.log.$current_date
 }
 
+# 出狱代码
+function unjail(){
+	read -p "钱包名称: " wallet_name
+	evmosd tx slashing unjail --from $wallet_name --gas=500000 --gas-prices=99999aevmos -y
+}
+
+
 # 主菜单
 function main_menu() {
     while true; do
@@ -252,6 +259,7 @@ function main_menu() {
         echo "14. 启动存储节点"
         echo "--------------------其他--------------------"
         echo "15. 卸载节点"
+        echo "16. 申请出狱"
         echo "0. 退出脚本exit"
         read -p "请输入选项: " OPTION
 
@@ -271,6 +279,7 @@ function main_menu() {
         13) stop_storage_node ;;
         14) start_storage_node ;;
         15) uninstall_node ;;
+        16) unjail ;;
         0) echo "退出脚本。"; exit 0 ;;
 	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
 	    esac
