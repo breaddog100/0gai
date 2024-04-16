@@ -28,7 +28,7 @@ function install_node() {
         echo "PM2 已安装"
     else
         echo "PM2 未安装，正在安装..."
-        npm install pm2@latest -g
+        sudo npm install pm2@latest -g
     fi
 
 	# 更新系统
