@@ -121,12 +121,11 @@ function view_logs() {
 function uninstall_node() {
     echo "你确定要卸载0g ai 节点程序吗？这将会删除所有相关的数据。[Y/N]"
     read -r -p "请确认: " response
-
     case "$response" in
         [yY][eE][sS]|[yY]) 
             echo "开始卸载节点程序..."
             pm2 stop evmosd && pm2 delete evmosd
-            rm -rf $HOME/.evmosd $HOME/evmos $(which evmosd)
+            rm -rf $HOME/.evmosd $HOME/evmos $HOME/0g-evmos $(which evmosd)
             echo "节点程序卸载完成。"
             ;;
         *)
