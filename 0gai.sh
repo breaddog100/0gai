@@ -217,7 +217,7 @@ function install_storage_node() {
 	cargo build --release
 	#后台运行
 	cd run
-	screen -dmS zgs_node_session ../target/release/zgs_node --config config.toml
+	screen -dmS zgs_node_session $HOME/0g-storage-node/target/release/zgs_node --config config.toml
 	echo '====================== 部署完成 ==========================='
 	
 }
@@ -230,7 +230,7 @@ function stop_storage_node(){
 # 启动存储节点
 function start_storage_node(){
 	cd 0g-storage-node/run
-	screen -dmS zgs_node_session ../target/release/zgs_node --config config.toml
+	screen -dmS zgs_node_session $HOME/0g-storage-node/target/release/zgs_node --config config.toml
 }
 
 # 查看存储节点日志
