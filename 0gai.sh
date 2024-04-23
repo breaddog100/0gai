@@ -173,6 +173,21 @@ function start_node(){
 	pm2 start evmosd -- start
 }
 
+# 质押代币
+function delegate_aevmos(){
+
+    read -p "请输入钱包名称: " wallet_name
+    read -p "请输入质押代币数量: " math
+    validator=$(evmosd keys show $wallet_name --bech val -a)
+    read -p "请输入质押给谁(默认为自己:$validator): " validator_addr
+    if [ -z "$validator_addr" ]; then
+        $validator_addr=$validator
+    fi
+    
+    evmosd tx staking delegate $validator_addr ${math}aevmos --from $wallet_name --gas=500000 --gas-prices=99999aevmos -y
+
+}
+
 # 部署存储节点
 function install_storage_node() {
      if command -v node > /dev/null 2>&1; then
@@ -283,6 +298,7 @@ function main_menu() {
         echo "10. 停止节点"
         echo "11. 启动节点"
         echo "12. 卸载节点"
+        echo "13. 质押代币"
         echo "---------------存储节点相关选项---------------"
         echo "21. 部署存储节点"
         echo "22. 查看存储节点日志"
@@ -306,6 +322,7 @@ function main_menu() {
         10) stop_node ;;
         11) start_node ;;
         12) uninstall_node ;;
+        13) delegate_aevmos ;;
         
         21) install_storage_node ;;
         22) view_storage_logs ;;
