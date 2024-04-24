@@ -37,7 +37,7 @@ function install_node() {
     export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin
     source $HOME/.bash_profile
     # 构建0g代码
-    git clone https://github.com/0glabs/0g-evmos.git
+    git clone https://github.com/breaddog100/0g-evmos.git
     cd 0g-evmos
     git checkout v1.0.0-testnet
     make install
