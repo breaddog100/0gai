@@ -331,7 +331,7 @@ function main_menu() {
         11) start_node ;;
         12) uninstall_node ;;
         13) delegate_aevmos ;;
-        13) update_peers ;;
+        14) update_peers ;;
         
         21) install_storage_node ;;
         22) view_storage_logs ;;
