@@ -39,7 +39,6 @@ function install_node() {
     # 构建0g代码
     git clone https://github.com/breaddog100/0g-evmos.git
     cd 0g-evmos
-    git checkout v1.0.0-testnet
     make install
     evmosd version
 	# 设置变量
