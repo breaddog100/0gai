@@ -56,8 +56,7 @@ function install_node() {
     evmosd config keyring-backend os 
     # 配置节点
     wget https://github.com/0glabs/0g-evmos/releases/download/v1.0.0-testnet/genesis.json -O $HOME/.evmosd/config/genesis.json
-    # 下载快照
-    PEERS="1248487ea585730cdf5d3c32e0c2a43ad0cda973@peer-zero-gravity-testnet.trusted-point.com:26326" && \
+    PEERS="9516464cf93f73e4700a7368b060b0b2ff047ba7@84.247.163.150:26656,378cec1455aae07c7e415b748d623231010119c0@194.163.186.187:13456,0751229c60f58738aa2d02ee8551d3678712e192@207.180.236.138:26656,651882934756e9c2a175366f9038115c0ef0498e@109.199.101.199:26656,ae92f82a49bab2f13f12321a8ff85cd1d7416cc0@88.198.52.89:22356,d813235cc2326983e0ea071ffa8acba341df0adb@89.117.56.219:16656,5ee971af52565b34f142628583a9f2152ae49ec8@176.36.75.115:26656,c028db711bbe6b9407a258474f01f265bf2eda58@178.211.139.204:12656,95dd33b0414fb500559910292ecbc07ec4655870@84.247.178.116:12656,dd0d2b7c36afe283bfd6beef5166c62fe7011c92@161.97.122.200:12656,8102e8f5215fa782c37e68be35bd38428b1d3ace@81.0.246.122:22656,3f8a1aac27e52a327293e9b992bd7bd11b6d8b80@185.177.116.122:26656,63ba28c3a1c9692bcd69f2cfee921b65b2f45a61@94.130.228.43:26656,a6d340b30566efcf20f207eadcae9d15f2a01836@144.76.176.154:22356,1b06fd4dd3fcd7e530b60a2b6a7f228130906322@141.94.99.181:33656" && \
     SEEDS="8c01665f88896bca44e8902a30e4278bed08033f@54.241.167.190:26656,b288e8b37f4b0dbd9a03e8ce926cd9c801aacf27@54.176.175.48:26656,8e20e8e88d504e67c7a3a58c2ea31d965aa2a890@54.193.250.204:26656,e50ac888b35175bfd4f999697bdeb5b7b52bfc06@54.215.187.94:26656" && \
     sed -i -e "s/^seeds *=.*/seeds = \"$SEEDS\"/; s/^persistent_peers *=.*/persistent_peers = \"$PEERS\"/" $HOME/.evmosd/config/config.toml
     # 设置gas
@@ -188,6 +187,14 @@ function delegate_aevmos(){
 
 }
 
+# 更新种子
+function update_peers(){
+    
+    read -p "请输入种子地址，多个地址用 , 隔开: " PEERS
+    sed -i 's|^persistent_peers *=.*|persistent_peers = "'$PEERS'"|' $HOME/.evmosd/config/config.toml
+    pm2 restart evmosd
+}
+
 # 部署存储节点
 function install_storage_node() {
      if command -v node > /dev/null 2>&1; then
@@ -299,6 +306,7 @@ function main_menu() {
         echo "11. 启动节点"
         echo "12. 卸载节点"
         echo "13. 质押代币"
+        echo "14. 更新PEERS"
         echo "---------------存储节点相关选项---------------"
         echo "21. 部署存储节点"
         echo "22. 查看存储节点日志"
@@ -323,6 +331,7 @@ function main_menu() {
         11) start_node ;;
         12) uninstall_node ;;
         13) delegate_aevmos ;;
+        13) update_peers ;;
         
         21) install_storage_node ;;
         22) view_storage_logs ;;
