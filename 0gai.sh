@@ -186,6 +186,15 @@ function delegate_aevmos(){
 
 }
 
+# 代币转账
+function send_aevmos(){
+
+    read -p "转出钱包名: " out_wallet_name
+    read -p "转账代币数量: " math
+    read -p "接收钱包地址: " in_wallet_name
+    evmosd tx bank send $out_wallet_name $in_wallet_name ${math}aevmos --from $out_wallet_name --gas=500000 --gas-prices=99999aevmos -y
+
+}
 # 更新种子
 function update_peers(){
     
@@ -306,6 +315,7 @@ function main_menu() {
         echo "12. 卸载节点"
         echo "13. 质押代币"
         echo "14. 更新PEERS"
+        echo "15. 代币转账"
         echo "---------------存储节点相关选项---------------"
         echo "21. 部署存储节点"
         echo "22. 查看存储节点日志"
@@ -331,6 +341,7 @@ function main_menu() {
         12) uninstall_node ;;
         13) delegate_aevmos ;;
         14) update_peers ;;
+        15) send_aevmos ;;
         
         21) install_storage_node ;;
         22) view_storage_logs ;;
