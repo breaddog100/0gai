@@ -41,7 +41,7 @@ function install_node() {
     rm ~/.0gchain/config/genesis.json
     wget -P $HOME/.0gchain/config https://github.com/0glabs/0g-chain/releases/download/v0.1.0/genesis.json
     0gchaind validate-genesis
-    wget -O $HOME/.0gchain/config/addrbook.json https://testnet.anatolianteam.com/0g/addrbook.json
+    wget -O $HOME/.0gchain/config/addrbook.json https://snapshots-testnet.nodejumper.io/0g-testnet/addrbook.json
     
     # 配置种子
     SEEDS="c4d619f6088cb0b24b4ab43a0510bf9251ab5d7f@54.241.167.190:26656,44d11d4ba92a01b520923f51632d2450984d5886@54.176.175.48:26656,f2693dd86766b5bf8fd6ab87e2e970d564d20aff@54.193.250.204:26656,f878d40c538c8c23653a5b70f615f8dccec6fb9f@54.215.187.94:26656"
@@ -76,10 +76,10 @@ EOF
     
     echo "正在更新快照，请耐心等待"
     sudo systemctl stop 0gchaind
-    custom_date=$(date -d "$now" "+%Y%m%d")
-    cp $HOME/.0gchain/data/priv_validator_state.json $HOME/0gchain_priv_validator_state.json.backup.${custom_date}
-    curl -L https://testnet.anatolianteam.com/0g/zgtendermint_16600-1.tar.lz4 | tar -I lz4 -xf - -C $HOME/.0gchain
-    mv $HOME/0gchain_priv_validator_state.json.backup.${custom_date} $HOME/.0gchain/data/priv_validator_state.json
+    cp $HOME/.0gchain/data/priv_validator_state.json $HOME/0gchain_priv_validator_state.json.backup
+    0gchaind tendermint unsafe-reset-all --home $HOME/.0gchain --keep-addr-book
+    curl https://snapshots-testnet.nodejumper.io/0g-testnet/0g-testnet_latest.tar.lz4 | lz4 -dc - | tar -xf - -C $HOME/.0gchain
+    cp $HOME/0gchain_priv_validator_state.json.backup $HOME/.0gchain/data/priv_validator_state.json
     sudo systemctl start 0gchaind
     
     echo '====================== 部署完成 ==========================='
@@ -104,7 +104,7 @@ function uninstall_node() {
             echo "开始卸载验证节点..."
             sudo systemctl stop 0gchaind
             sudo rm -f /etc/systemd/system/0gchaind.service
-            rm -rf $HOME/.0gchaind $HOME/0gchaind $(which 0gchaind)
+            rm -rf $HOME/0g-chain $HOME/0g-chain $(which 0gchaind)
             echo "验证节点卸载完成。"
             ;;
         *)
@@ -117,6 +117,7 @@ function uninstall_node() {
 function add_wallet() {
 	read -p "请输入钱包名称: " wallet_name
     0gchaind keys add $wallet_name --eth
+    echo "输入钱包密码，生成0x开头的钱包地址："
     echo "0x$(0gchaind debug addr $(0gchaind keys show $wallet_name -a) | grep hex | awk '{print $3}')"
 }
 
@@ -165,11 +166,13 @@ function add_validator() {
 # 停止验证节点
 function stop_node(){
 	sudo systemctl stop 0gchaind
+	echo "节点已停止..."
 }
 
 # 启动验证节点
 function start_node(){
 	sudo systemctl start 0gchaind
+	echo "节点已启动..."
 }
 
 # 质押代币
@@ -198,11 +201,8 @@ function update_peers(){
 
 # 提取秘钥
 function show_validator_key() {
-    echo "请备份秘钥文件："
+    echo "请备份秘钥文件，路径："
     echo "$HOME/.0gchaind/config/priv_validator_key.json"
-    echo "内容："
-    cat $HOME/.0gchaind/config/priv_validator_key.json
-    
 }
 
 # 申请出狱
@@ -263,12 +263,14 @@ function install_storage_node() {
 # 停止存储节点
 function stop_storage_node(){
 	screen -S zgs_node_session -X quit
+	echo "节点已停止..."
 }
 
 # 启动存储节点
 function start_storage_node(){
 	cd 0g-storage-node/run
 	screen -dmS zgs_node_session $HOME/0g-storage-node/target/release/zgs_node --config config.toml
+	echo "节点已启动..."
 }
 
 # 查看存储节点日志
@@ -363,7 +365,7 @@ function uninstall_old_node() {
 function main_menu() {
     while true; do
         clear
-        echo "===============0gAI一键部署脚本==============="
+        echo "===============0gAI v2.0一键部署脚本==============="
     	echo "沟通电报群：https://t.me/lumaogogogo"
     	echo "最低配置：2C8G300G，推荐配置：8C64G1T"
         echo "请选择要执行的操作:"
@@ -391,6 +393,7 @@ function main_menu() {
         echo "24. 启动存储节点"
         echo "25. 卸载存储节点"
         echo "--------------------其他--------------------"
+        echo "51. 卸载老节点"
         echo "0. 退出脚本exit"
         read -p "请输入选项: " OPTION
 
@@ -417,6 +420,8 @@ function main_menu() {
         23) stop_storage_node ;;
         24) start_storage_node ;;
         25) uninstall_storage_node ;;
+        
+        51) uninstall_old_node ;;
         
         0) echo "退出脚本。"; exit 0 ;;
 	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
