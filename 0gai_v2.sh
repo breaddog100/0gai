@@ -351,8 +351,8 @@ function uninstall_old_node() {
     case "$response" in
         [yY][eE][sS]|[yY]) 
             echo "开始卸载节点程序..."
-            pm2 stop 0gchaind && pm2 delete 0gchaind
-            rm -rf $HOME/.0gchain $HOME/0gchain $(which 0gchaind) && rm -rf 0gchaind
+            pm2 stop evmosd && pm2 delete evmosd
+            rm -rf $HOME/.evmosd $HOME/0g-evmos $(which evmosd) 
             echo "节点程序卸载完成。"
             ;;
         *)
