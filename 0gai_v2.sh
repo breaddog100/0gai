@@ -252,10 +252,11 @@ function install_storage_node() {
 	git submodule update --init
 	# 构建存储节点代码
 	cargo build --release
+	sed -i "s/miner_key = \"\"/miner_key = \"$NODE_MONIKER\"/" $HOME/0g-storage-node/run/config.toml
+    sed -i 's|blockchain_rpc_endpoint = "https://rpc-testnet.0g.ai"|blockchain_rpc_endpoint = "https://evm-rpc-0gchain.dadunode.com"|g' $HOME/0g-storage-node/run/config.toml
+    sed -i 's/log_sync_start_block_number = 80981/log_sync_start_block_number = 223989/' $HOME/0g-storage-node/run/config.toml
 	#后台运行
 	cd run
-    sed -i "s/miner_key = \"\"/miner_key = \"$minerkey\"/" config.toml
-    sed -i 's|blockchain_rpc_endpoint = "https://rpc-testnet.0g.ai"|blockchain_rpc_endpoint = "https://0g-evm-rpc.stakeme.pro"|g' config.toml
     screen -dmS zgs_node_session $HOME/0g-storage-node/target/release/zgs_node --config config.toml
 	echo "部署完成..."
 }
