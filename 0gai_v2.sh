@@ -253,13 +253,21 @@ function install_storage_node() {
 	# 构建存储节点代码
 	cargo build --release
 	sed -i "s/miner_key = \"\"/miner_key = \"$NODE_MONIKER\"/" $HOME/0g-storage-node/run/config.toml
-    sed -i 's/blockchain_rpc_endpoint = ".*"/blockchain_rpc_endpoint = "https:\/\/evm-rpc-0gchain.dadunode.com"/' $HOME/0g-storage-node/run/config.toml
     sed -i 's/log_sync_start_block_number = [0-9]\+/log_sync_start_block_number = 223989/' $HOME/0g-storage-node/run/config.toml
 	#后台运行
 	cd run
     screen -dmS zgs_node_session $HOME/0g-storage-node/target/release/zgs_node --config config.toml
 	echo "部署完成..."
 }
+
+# 修改RPC
+function update_rpc(){
+    read -p "RPC地址：" RPC_ADDR
+    sed -i 's/blockchain_rpc_endpoint = ".*"/blockchain_rpc_endpoint = "$RPC_ADDR"/' $HOME/0g-storage-node/run/config.toml
+    screen -dmS zgs_node_session $HOME/0g-storage-node/target/release/zgs_node --config $HOME/0g-storage-node/run/config.toml
+    view_storage_logs
+}
+
 
 # 停止存储节点
 function stop_storage_node(){
