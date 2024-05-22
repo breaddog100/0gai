@@ -258,6 +258,7 @@ function install_storage_node() {
 	cd run
     screen -dmS zgs_node_session $HOME/0g-storage-node/target/release/zgs_node --config config.toml
 	echo "部署完成..."
+	view_storage_logs
 }
 
 # 修改RPC
