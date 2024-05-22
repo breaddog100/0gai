@@ -268,7 +268,6 @@ function update_rpc(){
     view_storage_logs
 }
 
-
 # 停止存储节点
 function stop_storage_node(){
 	screen -S zgs_node_session -X quit
@@ -404,6 +403,7 @@ function main_menu() {
         echo "23. 停止存储节点"
         echo "24. 启动存储节点"
         echo "25. 卸载存储节点"
+        echo "26. 修改RPC"
         echo "--------------------其他--------------------"
         echo "51. 卸载老节点"
         echo "0. 退出脚本exit"
@@ -432,6 +432,7 @@ function main_menu() {
         23) stop_storage_node ;;
         24) start_storage_node ;;
         25) uninstall_storage_node ;;
+        26) update_rpc ;;
         
         51) uninstall_old_node ;;
         
