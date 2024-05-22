@@ -7,7 +7,8 @@ SCRIPT_PATH="$HOME/0gai.sh"
 
 # 节点安装功能
 function install_node() {
-
+    read -r -p "节点名称: " NODE_MONIKER
+    export NODE_MONIKER=$NODE_MONIKER
     if command -v node > /dev/null 2>&1; then
         echo "Node.js 已安装"
     else
@@ -41,9 +42,6 @@ function install_node() {
     cd 0g-evmos
     make install
     evmosd version
-	# 设置变量
-    read -r -p "节点名称: " NODE_MONIKER
-    export NODE_MONIKER=$NODE_MONIKER
     # 配置evmosd
     echo 'export MONIKER="$NODE_MONIKER"' >> ~/.bash_profile
     source $HOME/.bash_profile
@@ -205,7 +203,8 @@ function update_peers(){
 
 # 部署存储节点
 function install_storage_node() {
-     if command -v node > /dev/null 2>&1; then
+    read -r -p "节点名称: " NODE_MONIKER
+    if command -v node > /dev/null 2>&1; then
         echo "Node.js 已安装"
     else
         echo "Node.js 未安装，正在安装..."
@@ -245,6 +244,9 @@ function install_storage_node() {
 	git submodule update --init
 	# 构建存储节点代码
 	cargo build --release
+    sed -i "s/miner_key = \"\"/miner_key = \"$NODE_MONIKER\"/" $HOME/0g-storage-node/run/config.toml
+    sed -i 's|blockchain_rpc_endpoint = "https://rpc-testnet.0g.ai"|blockchain_rpc_endpoint = "https://evm-rpc-0gchain.dadunode.com"|g' $HOME/0g-storage-node/run/config.tomlconfig.toml
+    sed -i 's/log_sync_start_block_number = 80981/log_sync_start_block_number = 223989/' $HOME/0g-storage-node/run/config.tomlconfig.toml
 	#后台运行
 	cd run
 	screen -dmS zgs_node_session $HOME/0g-storage-node/target/release/zgs_node --config config.toml
