@@ -1,14 +1,10 @@
 #!/bin/bash
 
-set -e
-
-# 脚本保存路径
-SCRIPT_PATH="$HOME/0gai.sh"
-
 # 节点安装功能
 function install_node() {
+
     read -r -p "节点名称: " NODE_MONIKER
-    export NODE_MONIKER=$NODE_MONIKER
+
     if command -v node > /dev/null 2>&1; then
         echo "Node.js 已安装"
     else
@@ -22,74 +18,71 @@ function install_node() {
         echo "npm 未安装，正在安装..."
         sudo apt-get install -y npm
     fi
-	# 检查并安装 PM2
-    if command -v pm2 > /dev/null 2>&1; then
-        echo "PM2 已安装"
-    else
-        echo "PM2 未安装，正在安装..."
-        sudo npm install pm2@latest -g
-    fi
+    
 	# 更新系统
-	sudo apt update && sudo apt install -y curl git wget htop tmux build-essential jq make lz4 gcc unzip liblz4-tool clang cmake build-essential screen cargo
+	sudo apt update
+	sudo apt install -y curl git wget htop tmux build-essential jq make lz4 gcc unzip liblz4-tool clang cmake build-essential screen cargo
+	
     # 安装Go
     sudo rm -rf /usr/local/go
     curl -L https://go.dev/dl/go1.22.0.linux-amd64.tar.gz | sudo tar -xzf - -C /usr/local
     echo 'export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin' >> $HOME/.bash_profile
     export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin
     source $HOME/.bash_profile
-    # 构建0g代码
-    git clone https://github.com/breaddog100/0g-evmos.git
-    cd 0g-evmos
-    make install
-    evmosd version
-    # 配置evmosd
-    echo 'export MONIKER="$NODE_MONIKER"' >> ~/.bash_profile
-    source $HOME/.bash_profile
-    # 获取初始文件和地址簿
-    cd $HOME
-    evmosd init $NODE_MONIKER --chain-id zgtendermint_9000-1
-    evmosd config chain-id zgtendermint_9000-1
-    evmosd config node tcp://localhost:26657
-    evmosd config keyring-backend os 
-    # 配置节点
-    wget https://github.com/breaddog100/0g-evmos/blob/main/releases/download/v1.0.0-testnet/gensis.json -O $HOME/.evmosd/config/genesis.json
-    PEERS="9516464cf93f73e4700a7368b060b0b2ff047ba7@84.247.163.150:26656,378cec1455aae07c7e415b748d623231010119c0@194.163.186.187:13456,0751229c60f58738aa2d02ee8551d3678712e192@207.180.236.138:26656,651882934756e9c2a175366f9038115c0ef0498e@109.199.101.199:26656,ae92f82a49bab2f13f12321a8ff85cd1d7416cc0@88.198.52.89:22356,d813235cc2326983e0ea071ffa8acba341df0adb@89.117.56.219:16656,5ee971af52565b34f142628583a9f2152ae49ec8@176.36.75.115:26656,c028db711bbe6b9407a258474f01f265bf2eda58@178.211.139.204:12656,95dd33b0414fb500559910292ecbc07ec4655870@84.247.178.116:12656,dd0d2b7c36afe283bfd6beef5166c62fe7011c92@161.97.122.200:12656,8102e8f5215fa782c37e68be35bd38428b1d3ace@81.0.246.122:22656,3f8a1aac27e52a327293e9b992bd7bd11b6d8b80@185.177.116.122:26656,63ba28c3a1c9692bcd69f2cfee921b65b2f45a61@94.130.228.43:26656,a6d340b30566efcf20f207eadcae9d15f2a01836@144.76.176.154:22356,1b06fd4dd3fcd7e530b60a2b6a7f228130906322@141.94.99.181:33656" && \
-    SEEDS="8c01665f88896bca44e8902a30e4278bed08033f@54.241.167.190:26656,b288e8b37f4b0dbd9a03e8ce926cd9c801aacf27@54.176.175.48:26656,8e20e8e88d504e67c7a3a58c2ea31d965aa2a890@54.193.250.204:26656,e50ac888b35175bfd4f999697bdeb5b7b52bfc06@54.215.187.94:26656" && \
-    sed -i -e "s/^seeds *=.*/seeds = \"$SEEDS\"/; s/^persistent_peers *=.*/persistent_peers = \"$PEERS\"/" $HOME/.evmosd/config/config.toml
-    # 设置gas
-    sed -i "s/^minimum-gas-prices *=.*/minimum-gas-prices = \"0.00252aevmos\"/" $HOME/.evmosd/config/app.toml
-    # 使用 PM2 启动节点进程
-    pm2 start evmosd -- start && pm2 save && pm2 startup
-    # 使用 pm2 停止 ogd 服务
-    pm2 stop evmosd
-    # 下载最新的快照
-    # 增加并行下载功能-----------------------
-    wget https://rpc-zero-gravity-testnet.trusted-point.com/latest_snapshot.tar.lz4
-    # 备份验证者身份文件
-    cp $HOME/.evmosd/data/priv_validator_state.json $HOME/.evmosd/priv_validator_state.json.backup
-    # 重置数据目录，备份地址簿
-    evmosd tendermint unsafe-reset-all --home $HOME/.evmosd --keep-addr-book
-    # 将快照解压直接到 .evmosd 目录
-    # 增加判断文件是否存在————————————————
-    lz4 -d -c ./latest_snapshot.tar.lz4 | tar -xf - -C $HOME/.evmosd
-    # 恢复验证者状态文件的备份
-    mv $HOME/.evmosd/priv_validator_state.json.backup $HOME/.evmosd/data/priv_validator_state.json
-    # 使用 pm2 重启 evmosd 服务并跟踪日志
-    pm2 start evmosd -- start
-    pm2 logs evmosd
-    # 检查节点的同步状态
-    evmosd status | jq .SyncInfo
-    echo '====================== 部署完成 ==========================='
+    
+    # 下载代码
+    git clone -b v0.2.3 https://github.com/0glabs/0g-chain.git
+    ./0g-chain/networks/testnet/install.sh
+    source ~/.profile
+    
+    0gchaind init $NODE_MONIKER --chain-id zgtendermint_16600-1
+    0gchaind config chain-id zgtendermint_16600-1
+    
+    rm ~/.0gchain/config/genesis.json
+    wget -P ~/.0gchain/config https://github.com/0glabs/0g-chain/releases/download/v0.2.3/genesis.json
+    0gchaind validate-genesis
+    wget -O $HOME/.0gchain/config/addrbook.json https://snapshots-testnet.nodejumper.io/0g-testnet/addrbook.json
+    
+    # 配置种子
+    SEEDS="265120a9bb170cf21198aabf88f7908c9944897c@54.241.167.190:26656,497f865d8a0f6c830e2b73009a01b3edefb22577@54.176.175.48:26656,ffc49903241a4e442465ec78b8f421c56b3ae3d4@54.193.250.204:26656,f37bc8623bfa4d8e519207b965a24a288f3213d8@18.166.164.232:26656"
+    sed -i "s/seeds = \"\"/seeds = \"$SEEDS\"/" $HOME/.0gchain/config/config.toml
+    
+    sudo tee /etc/systemd/system/0gchaind.service > /dev/null <<EOF
+[Unit]
+Description=0gchain daemon
+After=network-online.target
+
+[Service]
+User=$USER
+ExecStart=$(which 0gchaind) start
+Restart=always
+RestartSec=3
+LimitNOFILE=infinity
+
+Environment="DAEMON_NAME=0gchaind"
+Environment="DAEMON_HOME=${HOME}/.0gchaind"
+Environment="DAEMON_RESTART_AFTER_UPGRADE=true"
+Environment="DAEMON_ALLOW_DOWNLOAD_BINARIES=false"
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    sudo systemctl daemon-reload
+    sudo systemctl enable 0gchaind
+    sudo systemctl start 0gchaind
+    
+    echo '部署完成...'
 }
 
-# 查看0gai 服务状态
+# 查看0gai服务状态
 function check_service_status() {
-    pm2 list
+    sudo systemctl status 0gchaind
 }
 
 # 0gai 节点日志查询
 function view_logs() {
-    pm2 logs evmosd
+    sudo journalctl -f -u 0gchaind.service
 }
 
 # 卸载验证节点功能
@@ -99,8 +92,9 @@ function uninstall_node() {
     case "$response" in
         [yY][eE][sS]|[yY]) 
             echo "开始卸载验证节点..."
-            pm2 stop evmosd && pm2 delete evmosd
-            rm -rf $HOME/.evmosd $HOME/evmos $HOME/0g-evmos $(which evmosd)
+            sudo systemctl stop 0gchaind
+            sudo rm -f /etc/systemd/system/0gchaind.service
+            rm -rf $HOME/0g-chain $HOME/0g-chain $(which 0gchaind)
             echo "验证节点卸载完成。"
             ;;
         *)
@@ -112,27 +106,27 @@ function uninstall_node() {
 # 创建钱包
 function add_wallet() {
 	read -p "请输入钱包名称: " wallet_name
-    evmosd keys add "$wallet_name"
-    echo 'export WALLET_NAME="$wallet_name"' >> ~/.bash_profile
-    echo "EVM钱包地址，用于领水："
-    echo "0x$(evmosd debug addr $(evmosd keys show $wallet_name -a) | grep hex | awk '{print $3}')"
+    0gchaind keys add $wallet_name --eth
+    echo "输入钱包密码，生成0x开头的钱包地址："
+    echo "0x$(0gchaind debug addr $(0gchaind keys show $wallet_name -a) | grep hex | awk '{print $3}')"
 }
 
 # 导入钱包
 function import_wallet() {
 	read -p "请输入钱包名称: " wallet_name
-    evmosd keys add "$wallet_name" --recover
+    0gchaind keys add $wallet_name --recover --eth
+    echo "0x$(0gchaind debug addr $(0gchaind keys show $wallet_name -a) | grep hex | awk '{print $3}')"
 }
 
 # 查询余额
 function check_balances() {
     read -p "请输入钱包地址: " wallet_address
-    evmosd query bank balances "$wallet_address" 
+    0gchaind query bank balances "$wallet_address"
 }
 
 # 查看节点同步状态
 function check_sync_status() {
-    evmosd status 2>&1 | jq .SyncInfo
+    0gchaind status 2>&1 | jq .SyncInfo
 }
 
 # 创建验证者
@@ -142,46 +136,41 @@ function add_validator() {
 	read -p "验证者名字: " validator_name
 	
 	evmosd tx staking create-validator \
-	  --amount=10000000000000000aevmos \
-	  --pubkey=$(evmosd tendermint show-validator) \
+	  --amount=1000000ua0gi \
+	  --pubkey=$(0gchaind tendermint show-validator) \
 	  --moniker=$validator_name \
-	  --chain-id=zgtendermint_9000-1 \
-	  --commission-rate=0.05 \
-	  --commission-max-rate=0.10 \
+	  --chain-id=zgtendermint_16600-1 \
+	  --commission-rate=0.10 \
+	  --commission-max-rate=0.20 \
 	  --commission-max-change-rate=0.01 \
 	  --min-self-delegation=1 \
 	  --from=$wallet_name \
 	  --identity="" \
 	  --website="" \
 	  --details="Support by breaddog" \
-	  --gas=500000 \
-	  --gas-prices=99999aevmos \
-	  -y
+	  --gas=auto \
+	  --gas-prices=1.4
+
+	  
 }
 
 # 停止验证节点
 function stop_node(){
-	pm2 stop evmosd
+	sudo systemctl stop 0gchaind
+	echo "节点已停止..."
 }
 
 # 启动验证节点
 function start_node(){
-	pm2 start evmosd -- start
+	sudo systemctl start 0gchaind
+	echo "节点已启动..."
 }
 
 # 质押代币
 function delegate_aevmos(){
-
     read -p "请输入钱包名称: " wallet_name
     read -p "请输入质押代币数量: " math
-    validator=$(evmosd keys show $wallet_name --bech val -a)
-    read -p "请输入质押给谁(默认为自己:$validator): " validator_addr
-    if [ -z "$validator_addr" ]; then
-        $validator_addr=$validator
-    fi
-    
-    evmosd tx staking delegate $validator_addr ${math}aevmos --from $wallet_name --gas=500000 --gas-prices=99999aevmos -y
-
+    0gchaind tx staking delegate $(0gchaind keys show $wallet_name --bech val -a)  ${math}ua0gi --from $wallet_name  --gas=auto --gas-adjustment=1.4 -y
 }
 
 # 代币转账
@@ -190,20 +179,38 @@ function send_aevmos(){
     read -p "转出钱包名: " out_wallet_name
     read -p "转账代币数量: " math
     read -p "接收钱包地址: " in_wallet_name
-    evmosd tx bank send $out_wallet_name $in_wallet_name ${math}aevmos --from $out_wallet_name --gas=500000 --gas-prices=99999aevmos -y
+    0gchaind tx bank send $out_wallet_name $in_wallet_name ${math}ua0gi --from $out_wallet_name --gas=auto --gas-prices=1.4 -y
 
 }
 # 更新种子
 function update_peers(){
     
     read -p "请输入种子地址，多个地址用 , 隔开: " PEERS
-    sed -i 's|^persistent_peers *=.*|persistent_peers = "'$PEERS'"|' $HOME/.evmosd/config/config.toml
-    pm2 restart evmosd
+    sed -i "s/persistent_peers = \"\"/persistent_peers = \"$PEERS\"/" $HOME/.0gchain/config/config.toml
+    sudo systemctl restart 0gchaind
 }
+
+# 提取秘钥
+function show_validator_key() {
+    echo "请备份秘钥文件，路径："
+    echo "$HOME/.0gchaind/config/priv_validator_key.json"
+}
+
+# 申请出狱
+function unjail(){
+	read -p "钱包名称: " wallet_name
+	# 查看入狱
+	#0gchaind tx slashing unjail --from <key_name> --gas=500000 --gas-prices=99999neuron -y
+	0gchaind tx slashing unjail --from $wallet_name --gas=auto --gas-prices=1.4 -y
+}
+
+#####################################################################################
 
 # 部署存储节点
 function install_storage_node() {
-    read -r -p "节点名称: " NODE_MONIKER
+    read -p "存储节点名称: " storage_node_name
+    read -p "EVM钱包私钥(不含0x): " minerkey
+
     if command -v node > /dev/null 2>&1; then
         echo "Node.js 已安装"
     else
@@ -217,15 +224,14 @@ function install_storage_node() {
         echo "npm 未安装，正在安装..."
         sudo apt-get install -y npm
     fi
-	# 检查并安装 PM2
-    if command -v pm2 > /dev/null 2>&1; then
-        echo "PM2 已安装"
-    else
-        echo "PM2 未安装，正在安装..."
-        sudo npm install pm2@latest -g
-    fi
+
 	# 更新系统
-	sudo apt update && sudo apt install -y curl git wget htop tmux build-essential jq make lz4 gcc unzip liblz4-tool clang cmake build-essential screen cargo
+	sudo apt update
+	sudo apt install -y curl git wget htop tmux build-essential jq make lz4 gcc unzip liblz4-tool clang cmake build-essential screen
+	
+	# 安装 rustup
+	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+	
     # 安装Go
     if command -v go > /dev/null 2>&1; then
         echo "Go 已安装"
@@ -237,44 +243,53 @@ function install_storage_node() {
         source $HOME/.bash_profile
     fi
     
-	# 克隆仓库
-	git clone https://github.com/0glabs/0g-storage-node.git
+    # 克隆仓库
+    git clone https://github.com/0glabs/0g-storage-node.git
 	#进入对应目录构建
 	cd 0g-storage-node
 	git submodule update --init
 	# 构建存储节点代码
 	cargo build --release
-    sed -i "s/miner_key = \"\"/miner_key = \"$NODE_MONIKER\"/" $HOME/0g-storage-node/run/config.toml
-    sed -i 's|blockchain_rpc_endpoint = "https://rpc-testnet.0g.ai"|blockchain_rpc_endpoint = "https://evm-rpc-0gchain.dadunode.com"|g' $HOME/0g-storage-node/run/config.toml
-    sed -i 's/log_sync_start_block_number = 80981/log_sync_start_block_number = 223989/' $HOME/0g-storage-node/run/config.toml
+	miner_id=$(openssl rand -hex 32)
+	sed -i "s/miner_key = \"\"/miner_key = \"$minerkey\"/" $HOME/0g-storage-node/run/config.toml
+	sed -i "s/miner_id = \"\"/miner_id = \"$miner_id\"/" $HOME/0g-storage-node/run/config.toml
 	#后台运行
 	cd run
-	screen -dmS zgs_node_session $HOME/0g-storage-node/target/release/zgs_node --config config.toml
-	echo '====================== 部署完成 ==========================='
-	
+    screen -dmS zgs_$storage_node_name $HOME/0g-storage-node/target/release/zgs_node --config config.toml
+	echo "部署完成..."
+	view_storage_logs
+}
+
+# 修改RPC
+function update_rpc(){
+    read -p "存储节点名称: " storage_node_name
+    read -p "RPC地址：" RPC_ADDR
+    sed -i 's/blockchain_rpc_endpoint = ".*"/blockchain_rpc_endpoint = "$RPC_ADDR"/' $HOME/0g-storage-node/run/config.toml
+    screen -dmS zgs_$storage_node_name $HOME/0g-storage-node/target/release/zgs_node --config $HOME/0g-storage-node/run/config.toml
+    view_storage_logs
 }
 
 # 停止存储节点
 function stop_storage_node(){
-	screen -S zgs_node_session -X quit
+    read -p "存储节点名称: " storage_node_name
+	screen -S zgs_$storage_node_name -X quit
+	echo "节点已停止..."
 }
 
 # 启动存储节点
 function start_storage_node(){
+    read -p "存储节点名称: " storage_node_name
+    read -p "EVM钱包私钥(不含0x): " minerkey
+    sed -i "s/miner_key = \"\"/miner_key = \"$minerkey\"/" $HOME/0g-storage-node/run/config.toml
 	cd 0g-storage-node/run
-	screen -dmS zgs_node_session $HOME/0g-storage-node/target/release/zgs_node --config config.toml
+	screen -dmS zgs_$storage_node_name $HOME/0g-storage-node/target/release/zgs_node --config config.toml
+	echo "节点已启动..."
 }
 
 # 查看存储节点日志
 function view_storage_logs(){
 	current_date=$(date +%Y-%m-%d)
 	tail -f $HOME/0g-storage-node/run/log/zgs.log.$current_date
-}
-
-# 申请出狱
-function unjail(){
-	read -p "钱包名称: " wallet_name
-	evmosd tx slashing unjail --from $wallet_name --gas=500000 --gas-prices=99999aevmos -y
 }
 
 # 卸载存储节点
@@ -284,9 +299,74 @@ function uninstall_storage_node(){
     case "$response" in
         [yY][eE][sS]|[yY]) 
             echo "开始卸载存储节点..."
-            screen -S zgs_node_session -X quit
+            screen -ls | grep 'zgs_' | cut -d. -f1 | awk '{print $1}' | xargs -I {} screen -X -S {} quit
             rm -rf $HOME/0g-storage-node
             echo "存储节点卸载完成。"
+            ;;
+        *)
+            echo "取消卸载操作。"
+            ;;
+    esac
+}
+
+# 修改端口
+function service_ports(){
+    # 检测端口
+    local start_port=9000
+    local needed_ports=7
+    local count=0
+    local ports=()
+    while [ "$count" -lt "$needed_ports" ]; do
+        if ! ss -tuln | grep -q ":$start_port " ; then
+            ports+=($start_port)
+            ((count++))
+        fi
+        ((start_port++))
+    done
+    echo "可用端口："
+    for port in "${ports[@]}"; do
+        echo -e "\033[0;32m$port\033[0m"
+    done
+    
+    # 提示用户输入端口配置，允许使用默认值
+    read -p "L2 HTTP端口 [默认: 8547]: " port_l2_execution_engine_http
+    port_l2_execution_engine_http=${port_l2_execution_engine_http:-8547}
+    read -p "L2 WS端口 [默认: 8548]: " port_l2_execution_engine_ws
+    port_l2_execution_engine_ws=${port_l2_execution_engine_ws:-8548}
+    read -p "请输入L2执行引擎Metrics端口 [默认: 6060]: " port_l2_execution_engine_metrics
+    port_l2_execution_engine_metrics=${port_l2_execution_engine_metrics:-6060}
+    read -p "请输入L2执行引擎P2P端口 [默认: 30306]: " port_l2_execution_engine_p2p
+    port_l2_execution_engine_p2p=${port_l2_execution_engine_p2p:-30306}
+    read -p "请输入证明者服务器端口 [默认: 9876]: " port_prover_server
+    port_prover_server=${port_prover_server:-9876}
+    read -p "请输入Prometheus端口 [默认: 9091]: " port_prometheus
+    port_prometheus=${port_prometheus:-9091}
+    read -p "请输入Grafana端口 [默认: 3001]: " port_grafana
+    port_grafana=${port_grafana:-3001}
+    
+    # 配置文件
+    sed -i "s|PORT_L2_EXECUTION_ENGINE_HTTP=.*|PORT_L2_EXECUTION_ENGINE_HTTP=${port_l2_execution_engine_http}|" .env
+    sed -i "s|PORT_L2_EXECUTION_ENGINE_WS=.*|PORT_L2_EXECUTION_ENGINE_WS=${port_l2_execution_engine_ws}|" .env
+    sed -i "s|PORT_L2_EXECUTION_ENGINE_METRICS=.*|PORT_L2_EXECUTION_ENGINE_METRICS=${port_l2_execution_engine_metrics}|" .env
+    sed -i "s|PORT_L2_EXECUTION_ENGINE_P2P=.*|PORT_L2_EXECUTION_ENGINE_P2P=${port_l2_execution_engine_p2p}|" .env
+    sed -i "s|PORT_PROVER_SERVER=.*|PORT_PROVER_SERVER=${port_prover_server}|" .env
+    sed -i "s|PORT_PROMETHEUS=.*|PORT_PROMETHEUS=${port_prometheus}|" .env
+    sed -i "s|PORT_GRAFANA=.*|PORT_GRAFANA=${port_grafana}|" .env
+    sed -i "s|BLOCK_PROPOSAL_FEE=.*|BLOCK_PROPOSAL_FEE=30|" .env
+}
+
+# 卸载老节点功能
+function uninstall_old_node() {
+    echo "本功能是卸载之前的0gAI节点，请先备份好钱包等资产数据！如果没有参与上一期的0gAI测试，无需运行。"
+    echo "你确定要卸载0g ai 节点程序吗？这将会删除所有相关的数据。[Y/N]"
+    read -r -p "请确认: " response
+    
+    case "$response" in
+        [yY][eE][sS]|[yY]) 
+            echo "开始卸载节点程序..."
+            pm2 stop evmosd && pm2 delete evmosd
+            rm -rf $HOME/.evmosd $HOME/0g-evmos $(which evmosd) 
+            echo "节点程序卸载完成。"
             ;;
         *)
             echo "取消卸载操作。"
@@ -298,9 +378,12 @@ function uninstall_storage_node(){
 function main_menu() {
     while true; do
         clear
-        echo "===============0gAI一键部署脚本==============="
+        echo "=================0gAI 一键部署脚本================="
     	echo "沟通电报群：https://t.me/lumaogogogo"
-    	echo "最低配置：2C8G300G，推荐配置：8C16G500G"
+    	echo "验证者节点：8C64G1T，存储节点：4C16G1T"
+    	echo "感谢以下无私的分享者："
+    	echo "草边河 发现并验证了卸载老节点的bug"
+    	echo "===========桃花潭水深千尺，不及汪伦送我情============="
         echo "请选择要执行的操作:"
         echo "---------------验证节点相关选项----------------"
         echo "1. 部署节点"
@@ -314,17 +397,20 @@ function main_menu() {
         echo "9. 申请出狱"
         echo "10. 停止节点"
         echo "11. 启动节点"
-        echo "12. 卸载节点"
         echo "13. 质押代币"
         echo "14. 更新PEERS"
         echo "15. 代币转账"
+        echo "16. 提取秘钥"
+        echo "11618. 卸载节点"
         echo "---------------存储节点相关选项---------------"
         echo "21. 部署存储节点"
         echo "22. 查看存储节点日志"
         echo "23. 停止存储节点"
         echo "24. 启动存储节点"
-        echo "25. 卸载存储节点"
+        echo "25. 修改RPC"
+        echo "21618. 卸载存储节点"
         echo "--------------------其他--------------------"
+        echo "51618. 卸载老节点"
         echo "0. 退出脚本exit"
         read -p "请输入选项: " OPTION
 
@@ -340,16 +426,20 @@ function main_menu() {
         9) unjail ;;
         10) stop_node ;;
         11) start_node ;;
-        12) uninstall_node ;;
-        13) delegate_aevmos ;;
-        14) update_peers ;;
-        15) send_aevmos ;;
+        12) delegate_aevmos ;;
+        13) update_peers ;;
+        14) send_aevmos ;;
+        15) show_validator_key ;;
+        11618) uninstall_node ;;
         
         21) install_storage_node ;;
         22) view_storage_logs ;;
         23) stop_storage_node ;;
         24) start_storage_node ;;
-        25) uninstall_storage_node ;;
+        25) update_rpc ;;
+        21618) uninstall_storage_node ;;
+
+        51618) uninstall_old_node ;;
         
         0) echo "退出脚本。"; exit 0 ;;
 	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
