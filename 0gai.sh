@@ -227,7 +227,7 @@ function install_storage_node() {
 
 	# 更新系统
 	sudo apt update
-	sudo apt install -y curl git wget htop tmux build-essential jq make lz4 gcc unzip liblz4-tool clang cmake build-essential screen
+	sudo apt install -y curl git wget htop tmux build-essential jq make lz4 gcc unzip liblz4-tool clang cmake build-essential screen cargo
 	
 	# 安装 rustup
 	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -251,13 +251,19 @@ function install_storage_node() {
 	# 构建存储节点代码
 	cargo build --release
 	miner_id=$(openssl rand -hex 32)
-	sed -i "s/miner_key = \"\"/miner_key = \"$minerkey\"/" $HOME/0g-storage-node/run/config.toml
-	sed -i "s/miner_id = \"\"/miner_id = \"$miner_id\"/" $HOME/0g-storage-node/run/config.toml
+	RPC_ADDR="https://jsonrpc.0g-test.paknodesarmy.xyz/"
+	PUBLIC_IP=$(curl -s ifconfig.me)
+	sed -i "s|^# *miner_key = \".*\"|miner_key = \"$minerkey\"|" $HOME/0g-storage-node/run/config.toml
+	sed -i "s|^# *miner_id = \".*\"|miner_id = \"$miner_id\"|" $HOME/0g-storage-node/run/config.toml
+	sed -i "s|^# *log_contract_address = \".*\"|log_contract_address = \"0x8873cc79c5b3b5666535C825205C9a128B1D75F1\"|" $HOME/0g-storage-node/run/config.toml
+    sed -i "s|^# *mine_contract_address = \".*\"|mine_contract_address = \"0x85F6722319538A805ED5733c5F4882d96F1C7384\"|" $HOME/0g-storage-node/run/config.toml
+    sed -i "s|^# *network_enr_address = \".*\"|network_enr_address = \"$PUBLIC_IP\"|" $HOME/0g-storage-node/run/config.toml
+    sed -i "s|^# *blockchain_rpc_endpoint = \".*\"|blockchain_rpc_endpoint = \"$RPC_ADDR\"|" $HOME/0g-storage-node/run/config.toml
 	#后台运行
 	cd run
-    screen -dmS zgs_$storage_node_name $HOME/0g-storage-node/target/release/zgs_node --config config.toml
+    screen -dmS zgs_$storage_node_name $HOME/0g-storage-node/target/release/zgs_node --config config.toml --blockchain-rpc-endpoint "https://jsonrpc.0g-test.paknodesarmy.xyz/"
 	echo "部署完成..."
-	view_storage_logs
+	#view_storage_logs
 }
 
 # 修改RPC
@@ -265,7 +271,7 @@ function update_rpc(){
     read -p "存储节点名称: " storage_node_name
     read -p "RPC地址：" RPC_ADDR
     sed -i 's/blockchain_rpc_endpoint = ".*"/blockchain_rpc_endpoint = "$RPC_ADDR"/' $HOME/0g-storage-node/run/config.toml
-    screen -dmS zgs_$storage_node_name $HOME/0g-storage-node/target/release/zgs_node --config $HOME/0g-storage-node/run/config.toml
+    screen -dmS zgs_$storage_node_name $HOME/0g-storage-node/target/release/zgs_node --config $HOME/0g-storage-node/run/config.toml --blockchain-rpc-endpoint "https://jsonrpc.0g-test.paknodesarmy.xyz/"
     view_storage_logs
 }
 
@@ -282,7 +288,7 @@ function start_storage_node(){
     read -p "EVM钱包私钥(不含0x): " minerkey
     sed -i "s/miner_key = \"\"/miner_key = \"$minerkey\"/" $HOME/0g-storage-node/run/config.toml
 	cd 0g-storage-node/run
-	screen -dmS zgs_$storage_node_name $HOME/0g-storage-node/target/release/zgs_node --config config.toml
+	screen -dmS zgs_$storage_node_name $HOME/0g-storage-node/target/release/zgs_node --config config.toml --blockchain-rpc-endpoint "https://jsonrpc.0g-test.paknodesarmy.xyz/"
 	echo "节点已启动..."
 }
 
