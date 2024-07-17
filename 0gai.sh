@@ -261,7 +261,7 @@ function install_storage_node() {
     sed -i "s|^# *blockchain_rpc_endpoint = \".*\"|blockchain_rpc_endpoint = \"$RPC_ADDR\"|" $HOME/0g-storage-node/run/config.toml
 	#后台运行
 	cd run
-    screen -dmS zgs_$storage_node_name $HOME/0g-storage-node/target/release/zgs_node --config config.toml --blockchain-rpc-endpoint $RPC_ADDR
+    screen -dmS zgs_$storage_node_name $HOME/0g-storage-node/target/release/zgs_node --config config.toml
 	echo "部署完成..."
 	#view_storage_logs
 }
@@ -271,7 +271,7 @@ function update_rpc(){
     read -p "存储节点名称: " storage_node_name
     read -p "RPC地址：" RPC_ADDR
     sed -i 's/blockchain_rpc_endpoint = ".*"/blockchain_rpc_endpoint = "$RPC_ADDR"/' $HOME/0g-storage-node/run/config.toml
-    screen -dmS zgs_$storage_node_name $HOME/0g-storage-node/target/release/zgs_node --config $HOME/0g-storage-node/run/config.toml --blockchain-rpc-endpoint $RPC_ADDR
+    screen -dmS zgs_$storage_node_name $HOME/0g-storage-node/target/release/zgs_node --config $HOME/0g-storage-node/run/config.toml
     view_storage_logs
 }
 
@@ -287,9 +287,9 @@ function start_storage_node(){
     read -p "存储节点名称: " storage_node_name
     read -p "EVM钱包私钥(不含0x): " minerkey
     sed -i "s/miner_key = \"\"/miner_key = \"$minerkey\"/" $HOME/0g-storage-node/run/config.toml
-    RPC_ADDR=$(grep 'blockchain_rpc_endpoint' $HOME/0g-storage-node/run/config.toml | cut -d '"' -f 2)
+    #RPC_ADDR=$(grep 'blockchain_rpc_endpoint' $HOME/0g-storage-node/run/config.toml | cut -d '"' -f 2)
 	cd 0g-storage-node/run
-	screen -dmS zgs_$storage_node_name $HOME/0g-storage-node/target/release/zgs_node --config config.toml --blockchain-rpc-endpoint $RPC_ADDR
+	screen -dmS zgs_$storage_node_name $HOME/0g-storage-node/target/release/zgs_node --config config.toml
 	echo "节点已启动..."
 }
 
