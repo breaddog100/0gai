@@ -107,6 +107,7 @@ function uninstall_node() {
 
 # 创建钱包
 function add_wallet() {
+    source $HOME/.bash_profile
 	read -p "请输入钱包名称: " wallet_name
     0gchaind keys add $wallet_name --eth
     echo "输入钱包密码，生成0x开头的钱包地址："
@@ -115,6 +116,7 @@ function add_wallet() {
 
 # 导入钱包
 function import_wallet() {
+    source $HOME/.bash_profile
 	read -p "请输入钱包名称: " wallet_name
     0gchaind keys add $wallet_name --recover --eth
     echo "0x$(0gchaind debug addr $(0gchaind keys show $wallet_name -a) | grep hex | awk '{print $3}')"
@@ -122,18 +124,20 @@ function import_wallet() {
 
 # 查询余额
 function check_balances() {
+    source $HOME/.bash_profile
     read -p "请输入钱包地址: " wallet_address
     0gchaind query bank balances "$wallet_address"
 }
 
 # 查看节点同步状态
 function check_sync_status() {
+    source $HOME/.bash_profile
     0gchaind status 2>&1 | jq .sync_info
 }
 
 # 创建验证者
 function add_validator() {
-	
+	source $HOME/.bash_profile
 	read -p "钱包名称: " wallet_name
 	read -p "验证者名字: " validator_name
 	
@@ -170,6 +174,7 @@ function start_node(){
 
 # 质押代币
 function delegate_aevmos(){
+    source $HOME/.bash_profile
     read -p "请输入钱包名称: " wallet_name
     read -p "请输入质押代币数量: " math
     0gchaind tx staking delegate $(0gchaind keys show $wallet_name --bech val -a)  ${math}ua0gi --from $wallet_name  --gas=auto --gas-adjustment=1.4 -y
@@ -177,7 +182,7 @@ function delegate_aevmos(){
 
 # 代币转账
 function send_aevmos(){
-
+    source $HOME/.bash_profile
     read -p "转出钱包名: " out_wallet_name
     read -p "转账代币数量: " math
     read -p "接收钱包地址: " in_wallet_name
@@ -200,6 +205,7 @@ function show_validator_key() {
 
 # 申请出狱
 function unjail(){
+    source $HOME/.bash_profile
 	read -p "钱包名称: " wallet_name
 	# 查看入狱
 	#0gchaind tx slashing unjail --from <key_name> --gas=500000 --gas-prices=99999neuron -y
