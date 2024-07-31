@@ -271,12 +271,14 @@ function install_storage_node() {
 	git submodule update --init
 	# 构建存储节点代码
 	cargo build --release
-	miner_id=$(openssl rand -hex 32)
 	RPC_ADDR="https://jsonrpc.0g-test.paknodesarmy.xyz/"
     RPC_ADDR="https://og-testnet-jsonrpc.itrocket.net"
+    RPC_ADDR="https://t0g.brightlystake.com/evm"
 	PUBLIC_IP=$(curl -s ifconfig.me)
 	sed -i "s|^# *miner_key = \".*\"|miner_key = \"$minerkey\"|" $HOME/0g-storage-node/run/config.toml
-	sed -i "s|^# *miner_id = \".*\"|miner_id = \"$miner_id\"|" $HOME/0g-storage-node/run/config.toml
+    sed -i "s|^# *rpc_listen_address = \".*\"|rpc_listen_address = \"0.0.0.0:5678\"|" $HOME/0g-storage-node/run/config.toml
+    sed -i "s|^# *network_boot_nodes = \[\]|network_boot_nodes = \[\"/ip4/54.219.26.22/udp/1234/p2p/16Uiu2HAmTVDGNhkHD98zDnJxQWu3i1FL1aFYeh9wiQTNu4pDCgps\",\"/ip4/52.52.127.117/udp/1234/p2p/16Uiu2HAkzRjxK2gorngB1Xq84qDrT4hSVznYDHj6BkbaE4SGx9oS\",\"/ip4/18.167.69.68/udp/1234/p2p/16Uiu2HAm2k6ua2mGgvZ8rTMV8GhpW71aVzkQWy7D37TTDuLCpgmX\"\]|" $HOME/0g-storage-node/run/config.toml
+    sed -i "s|^# *log_sync_start_block_number = 0|log_sync_start_block_number = 802|" $HOME/0g-storage-node/run/config.toml
 	sed -i "s|^# *log_contract_address = \".*\"|log_contract_address = \"0x8873cc79c5b3b5666535C825205C9a128B1D75F1\"|" $HOME/0g-storage-node/run/config.toml
     sed -i "s|^# *mine_contract_address = \".*\"|mine_contract_address = \"0x85F6722319538A805ED5733c5F4882d96F1C7384\"|" $HOME/0g-storage-node/run/config.toml
     sed -i "s|^# *network_enr_address = \".*\"|network_enr_address = \"$PUBLIC_IP\"|" $HOME/0g-storage-node/run/config.toml
