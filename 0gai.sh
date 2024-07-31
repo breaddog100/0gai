@@ -41,7 +41,7 @@ function install_node() {
     rm ~/.0gchain/config/genesis.json
     wget -P ~/.0gchain/config https://github.com/0glabs/0g-chain/releases/download/v0.2.3/genesis.json
     0gchaind validate-genesis
-    wget -O $HOME/.0gchain/config/addrbook.json https://testnet-files.itrocket.net/og/addrbook.json
+    wget -O $HOME/.0gchain/config/addrbook.json https://snapshots-testnet.nodejumper.io/0g-testnet/addrbook.json
     
     # 配置种子
     SEEDS="265120a9bb170cf21198aabf88f7908c9944897c@54.241.167.190:26656,497f865d8a0f6c830e2b73009a01b3edefb22577@54.176.175.48:26656,ffc49903241a4e442465ec78b8f421c56b3ae3d4@54.193.250.204:26656,f37bc8623bfa4d8e519207b965a24a288f3213d8@18.166.164.232:26656"
@@ -84,7 +84,7 @@ function check_service_status() {
 
 # 0gai 节点日志查询
 function view_logs() {
-    sudo journalctl -f -u 0gchaind.service
+    sudo journalctl -u 0gchaind.service -f -o cat
 }
 
 # 卸载验证节点功能
