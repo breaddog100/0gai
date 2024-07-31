@@ -35,17 +35,19 @@ function install_node() {
     ./0g-chain/networks/testnet/install.sh
     source ~/.profile
     
-    0gchaind init $NODE_MONIKER --chain-id zgtendermint_16600-1
-    0gchaind config chain-id zgtendermint_16600-1
+    0gchaind init $NODE_MONIKER --chain-id zgtendermint_16600-2
+    0gchaind config chain-id zgtendermint_16600-2
     
     rm ~/.0gchain/config/genesis.json
     wget -P ~/.0gchain/config https://github.com/0glabs/0g-chain/releases/download/v0.2.3/genesis.json
     0gchaind validate-genesis
-    wget -O $HOME/.0gchain/config/addrbook.json https://snapshots-testnet.nodejumper.io/0g-testnet/addrbook.json
+    wget -O $HOME/.0gchain/config/addrbook.json https://testnet-files.itrocket.net/og/addrbook.json
     
     # 配置种子
     SEEDS="265120a9bb170cf21198aabf88f7908c9944897c@54.241.167.190:26656,497f865d8a0f6c830e2b73009a01b3edefb22577@54.176.175.48:26656,ffc49903241a4e442465ec78b8f421c56b3ae3d4@54.193.250.204:26656,f37bc8623bfa4d8e519207b965a24a288f3213d8@18.166.164.232:26656"
+    PEERS="4d98cf3cb2a61238a0b1557596cdc4b306472cb9@95.216.228.91:13456,c44baa3836d07f9ed9a832f819bcf19fda67cc5d@95.216.42.217:13456,81987895a11f6689ada254c6b57932ab7ed909b6@54.241.167.190:26656,010fb4de28667725a4fef26cdc7f9452cc34b16d@54.176.175.48:26656,e9b4bc203197b62cc7e6a80a64742e752f4210d5@54.193.250.204:26656,68b9145889e7576b652ca68d985826abd46ad660@18.166.164.232:26656"
     sed -i "s/seeds = \"\"/seeds = \"$SEEDS\"/" $HOME/.0gchain/config/config.toml
+    sed -i "s/persistent_peers = \"\"/persistent_peers = \"$PEERS\"/" $HOME/.0gchain/config/config.toml
     
     sudo tee /etc/systemd/system/0gchaind.service > /dev/null <<EOF
 [Unit]
@@ -139,7 +141,7 @@ function add_validator() {
 	  --amount=1000000ua0gi \
 	  --pubkey=$(0gchaind tendermint show-validator) \
 	  --moniker=$validator_name \
-	  --chain-id=zgtendermint_16600-1 \
+	  --chain-id=zgtendermint_16600-2 \
 	  --commission-rate=0.10 \
 	  --commission-max-rate=0.20 \
 	  --commission-max-change-rate=0.01 \
@@ -247,7 +249,7 @@ function install_storage_node() {
     git clone https://github.com/0glabs/0g-storage-node.git
 	#进入对应目录构建
 	cd 0g-storage-node
-	git submodule update --init
+	git submodule update --init --recursive
 	# 构建存储节点代码
 	cargo build --release
 	miner_id=$(openssl rand -hex 32)
