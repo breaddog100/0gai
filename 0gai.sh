@@ -265,14 +265,15 @@ function install_storage_node() {
     fi
     
     # 克隆仓库
-    git clone https://github.com/0glabs/0g-storage-node.git
+    git clone -b v0.3.4 https://github.com/0glabs/0g-storage-node.git
 	#进入对应目录构建
 	cd 0g-storage-node
-	git submodule update --init --recursive
+	git submodule update --init
 	# 构建存储节点代码
 	cargo build --release
 	miner_id=$(openssl rand -hex 32)
 	RPC_ADDR="https://jsonrpc.0g-test.paknodesarmy.xyz/"
+    RPC_ADDR="https://og-testnet-jsonrpc.itrocket.net"
 	PUBLIC_IP=$(curl -s ifconfig.me)
 	sed -i "s|^# *miner_key = \".*\"|miner_key = \"$minerkey\"|" $HOME/0g-storage-node/run/config.toml
 	sed -i "s|^# *miner_id = \".*\"|miner_id = \"$miner_id\"|" $HOME/0g-storage-node/run/config.toml
@@ -291,7 +292,7 @@ function install_storage_node() {
 function update_rpc(){
     read -p "存储节点名称: " storage_node_name
     read -p "RPC地址：" RPC_ADDR
-    sed -i 's/blockchain_rpc_endpoint = ".*"/blockchain_rpc_endpoint = "$RPC_ADDR"/' $HOME/0g-storage-node/run/config.toml
+    sed -i "s|^ *blockchain_rpc_endpoint = \".*\"|blockchain_rpc_endpoint = \"$RPC_ADDR\"|" $HOME/0g-storage-node/run/config.toml
     screen -dmS zgs_$storage_node_name $HOME/0g-storage-node/target/release/zgs_node --config $HOME/0g-storage-node/run/config.toml
     view_storage_logs
 }
