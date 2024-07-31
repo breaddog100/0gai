@@ -206,6 +206,16 @@ function unjail(){
 	0gchaind tx slashing unjail --from $wallet_name --gas=auto --gas-prices=1.4 -y
 }
 
+# 下载快照
+function download_snap(){
+    echo "快照下载根据网速不同时间不同，请耐心等待"
+    cp $HOME/.0gchain/data/priv_validator_state.json $HOME/priv_validator_state.json-0gai.bak
+    curl -L https://testnet.anatolianteam.com/0g/zgtendermint_16600-2.tar.lz4 | tar -I lz4 -xf - -C $HOME/.0gchain/data
+    cp $HOME/priv_validator_state.json-0gai.bak $HOME/.0gchain/data/priv_validator_state.json 
+    echo "快照下载完成，请查看同步状态"
+    check_sync_status
+}
+
 #####################################################################################
 
 # 部署存储节点
@@ -395,21 +405,21 @@ function main_menu() {
     	echo "===========桃花潭水深千尺，不及汪伦送我情============="
         echo "请选择要执行的操作:"
         echo "---------------验证节点相关选项----------------"
-        echo "1. 部署节点"
-        echo "2. 创建钱包"
-        echo "3. 导入钱包"
-        echo "4. 查看余额"
-        echo "5. 创建验证者"
-        echo "6. 查看服务状态"
-        echo "7. 查看同步状态"
-        echo "8. 查看日志"
-        echo "9. 申请出狱"
-        echo "10. 停止节点"
-        echo "11. 启动节点"
-        echo "13. 质押代币"
-        echo "14. 更新PEERS"
-        echo "15. 代币转账"
-        echo "16. 提取秘钥"
+        echo "1. 部署节点 install_node"
+        echo "2. 创建钱包 add_wallet"
+        echo "3. 导入钱包 import_wallet"
+        echo "4. 查看余额 check_balances"
+        echo "5. 创建验证者 add_validator"
+        echo "6. 查看服务状态 check_service_status"
+        echo "7. 查看同步状态 check_sync_status"
+        echo "8. 查看日志 view_logs"
+        echo "9. 申请出狱 unjail"
+        echo "10. 停止节点 stop_node"
+        echo "11. 启动节点 start_node"
+        echo "12. 质押代币 delegate_aevmos"
+        echo "13. 更新PEERS update_peers"
+        echo "14. 提取秘钥 show_validator_key"
+        echo "15. 下载快照 download_snap"
         echo "11618. 卸载节点"
         echo "---------------存储节点相关选项---------------"
         echo "21. 部署存储节点"
@@ -437,8 +447,8 @@ function main_menu() {
         11) start_node ;;
         12) delegate_aevmos ;;
         13) update_peers ;;
-        14) send_aevmos ;;
-        15) show_validator_key ;;
+        14) show_validator_key ;;
+        15) download_snap ;;
         11618) uninstall_node ;;
         
         21) install_storage_node ;;
