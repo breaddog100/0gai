@@ -215,10 +215,13 @@ function unjail(){
 # 下载快照
 function download_snap(){
     echo "快照下载根据网速不同时间不同，请耐心等待"
+    stop_node
     cp $HOME/.0gchain/data/priv_validator_state.json $HOME/priv_validator_state.json-0gai.bak
-    curl -L https://testnet.anatolianteam.com/0g/zgtendermint_16600-2.tar.lz4 | tar -I lz4 -xf - -C $HOME/.0gchain/data
+    curl -L https://testnet.anatolianteam.com/0g/zgtendermint_16600-2.tar.lz4 | tar -I lz4 -xf - -C $HOME/.0gchain/
     cp $HOME/priv_validator_state.json-0gai.bak $HOME/.0gchain/data/priv_validator_state.json 
     echo "快照下载完成，请查看同步状态"
+    start_node
+    sleep 3
     check_sync_status
 }
 
