@@ -40,6 +40,9 @@ update_script() {
 
 }
 
+# 检查更新
+update_script
+
 # 节点安装功能
 function install_node() {
 
