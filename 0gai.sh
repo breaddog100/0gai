@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20240801003
+current_version=20240807001
 
 update_script() {
     # 指定URL
@@ -39,9 +39,6 @@ update_script() {
     fi
 
 }
-
-# 检查更新
-update_script
 
 # 节点安装功能
 function install_node() {
@@ -321,9 +318,9 @@ function install_storage_node() {
 	sed -i "s|^# *miner_key = \".*\"|miner_key = \"$minerkey\"|" $HOME/0g-storage-node/run/config.toml
     sed -i "s|^# *rpc_listen_address = \".*\"|rpc_listen_address = \"0.0.0.0:5678\"|" $HOME/0g-storage-node/run/config.toml
     sed -i "s|^# *network_boot_nodes = \[\]|network_boot_nodes = \[\"/ip4/54.219.26.22/udp/1234/p2p/16Uiu2HAmTVDGNhkHD98zDnJxQWu3i1FL1aFYeh9wiQTNu4pDCgps\",\"/ip4/52.52.127.117/udp/1234/p2p/16Uiu2HAkzRjxK2gorngB1Xq84qDrT4hSVznYDHj6BkbaE4SGx9oS\",\"/ip4/18.167.69.68/udp/1234/p2p/16Uiu2HAm2k6ua2mGgvZ8rTMV8GhpW71aVzkQWy7D37TTDuLCpgmX\"\]|" $HOME/0g-storage-node/run/config.toml
-    sed -i "s|^# *log_sync_start_block_number = 0|log_sync_start_block_number = 802|" $HOME/0g-storage-node/run/config.toml
-	sed -i "s|^# *log_contract_address = \".*\"|log_contract_address = \"0x8873cc79c5b3b5666535C825205C9a128B1D75F1\"|" $HOME/0g-storage-node/run/config.toml
-    sed -i "s|^# *mine_contract_address = \".*\"|mine_contract_address = \"0x85F6722319538A805ED5733c5F4882d96F1C7384\"|" $HOME/0g-storage-node/run/config.toml
+    sed -i "s|^# *log_sync_start_block_number = 0|log_sync_start_block_number = 401178|" $HOME/0g-storage-node/run/config.toml
+	sed -i "s|^# *log_contract_address = \".*\"|log_contract_address = \"0xB7e39604f47c0e4a6Ad092a281c1A8429c2440d3\"|" $HOME/0g-storage-node/run/config.toml
+    sed -i "s|^# *mine_contract_address = \".*\"|mine_contract_address = \"0x6176AA095C47A7F79deE2ea473B77ebf50035421\"|" $HOME/0g-storage-node/run/config.toml
     sed -i "s|^# *network_enr_address = \".*\"|network_enr_address = \"$PUBLIC_IP\"|" $HOME/0g-storage-node/run/config.toml
     sed -i "s|^# *blockchain_rpc_endpoint = \".*\"|blockchain_rpc_endpoint = \"$RPC_ADDR\"|" $HOME/0g-storage-node/run/config.toml
 	#后台运行
@@ -333,8 +330,8 @@ function install_storage_node() {
 	#view_storage_logs
 }
 
-# 修改RPC
-function update_rpc(){
+# 修改存储节点RPC
+function update_storage_rpc(){
     read -p "存储节点名称: " storage_node_name
     read -p "RPC地址：" RPC_ADDR
     sed -i "s|^ *blockchain_rpc_endpoint = \".*\"|blockchain_rpc_endpoint = \"$RPC_ADDR\"|" $HOME/0g-storage-node/run/config.toml
@@ -429,6 +426,19 @@ function service_ports(){
     sed -i "s|BLOCK_PROPOSAL_FEE=.*|BLOCK_PROPOSAL_FEE=30|" .env
 }
 
+# 更新存储节点合约
+function update_storage_contract(){
+    sed -i "s|^# *log_contract_address = \".*\"|log_contract_address = \"0xB7e39604f47c0e4a6Ad092a281c1A8429c2440d3\"|" $HOME/0g-storage-node/run/config.toml
+    sed -i "s|^# *mine_contract_address = \".*\"|mine_contract_address = \"0x6176AA095C47A7F79deE2ea473B77ebf50035421\"|" $HOME/0g-storage-node/run/config.toml
+    sed -i "s|^# *log_sync_start_block_number = 0|log_sync_start_block_number = 401178|" $HOME/0g-storage-node/run/config.toml
+    stop_storage_node
+    mv $HOME/0g-storage-node/run/db $HOME/0g-storage-node/run/db.bak
+    echo "已将db目录修改为db.bak，如果启动正常可以删除该目录，命令为：rm -rf $HOME/0g-storage-node/run/db.bak"
+    start_storage_node
+    echo "节点已启动，如下为日志："
+    view_storage_logs
+}
+
 # 卸载老节点功能
 function uninstall_old_node() {
     echo "本功能是卸载之前的0gAI节点，请先备份好钱包等资产数据！如果没有参与上一期的0gAI测试，无需运行。"
@@ -478,14 +488,15 @@ function main_menu() {
         echo "15. 下载快照 download_snap"
         echo "11618. 卸载节点"
         echo "---------------存储节点相关选项---------------"
-        echo "21. 部署存储节点"
-        echo "22. 查看存储节点日志"
-        echo "23. 停止存储节点"
-        echo "24. 启动存储节点"
-        echo "25. 修改RPC"
-        echo "21618. 卸载存储节点"
+        echo "21. 部署存储节点 install_storage_node"
+        echo "22. 查看存储节点日志 view_storage_logs"
+        echo "23. 停止存储节点 stop_storage_node"
+        echo "24. 启动存储节点 start_storage_node"
+        echo "25. 修改RPC update_storage_rpc"
+        echo "26. 更新合约 update_store_contract"
+        echo "21618. 卸载存储节点 uninstall_storage_node"
         echo "--------------------其他--------------------"
-        echo "51618. 卸载老节点"
+        echo "51618. 卸载老节点 uninstall_old_node"
         echo "0. 退出脚本exit"
         read -p "请输入选项: " OPTION
 
@@ -511,7 +522,8 @@ function main_menu() {
         22) view_storage_logs ;;
         23) stop_storage_node ;;
         24) start_storage_node ;;
-        25) update_rpc ;;
+        25) update_storage_rpc ;;
+        26) update_store_contract ;;
         21618) uninstall_storage_node ;;
 
         51618) uninstall_old_node ;;
@@ -523,6 +535,9 @@ function main_menu() {
         read -n 1
     done
 }
+
+# 检查更新
+update_script
 
 # 显示主菜单
 main_menu
