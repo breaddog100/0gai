@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20240807001
+current_version=20240807002
 
 update_script() {
     # 指定URL
@@ -431,8 +431,11 @@ function update_storage_contract(){
     sed -i "s|^# *log_contract_address = \".*\"|log_contract_address = \"0xB7e39604f47c0e4a6Ad092a281c1A8429c2440d3\"|" $HOME/0g-storage-node/run/config.toml
     sed -i "s|^# *mine_contract_address = \".*\"|mine_contract_address = \"0x6176AA095C47A7F79deE2ea473B77ebf50035421\"|" $HOME/0g-storage-node/run/config.toml
     sed -i "s|^# *log_sync_start_block_number = 0|log_sync_start_block_number = 401178|" $HOME/0g-storage-node/run/config.toml
+    sed -i "s| *log_contract_address = \".*\"|log_contract_address = \"0xB7e39604f47c0e4a6Ad092a281c1A8429c2440d3\"|" $HOME/0g-storage-node/run/config.toml
+    sed -i "s| *mine_contract_address = \".*\"|mine_contract_address = \"0x6176AA095C47A7F79deE2ea473B77ebf50035421\"|" $HOME/0g-storage-node/run/config.toml
+    sed -i "s| *log_sync_start_block_number = 0|log_sync_start_block_number = 401178|" $HOME/0g-storage-node/run/config.toml
     stop_storage_node
-    mv $HOME/0g-storage-node/run/db $HOME/0g-storage-node/run/db.bak
+    mv $HOME/0g-storage-node/run/db $HOME/0g-storage-node/run/db.bak.$(date +%Y%m%d)
     echo "已将db目录修改为db.bak，如果启动正常可以删除该目录，命令为：rm -rf $HOME/0g-storage-node/run/db.bak"
     start_storage_node
     echo "节点已启动，如下为日志："
@@ -468,7 +471,7 @@ function main_menu() {
     	echo "验证者节点：8C64G1T，存储节点：4C16G1T"
     	echo "感谢以下无私的分享者："
     	echo "草边河 发现并验证了卸载老节点的bug"
-    	echo "===========桃花潭水深千尺，不及汪伦送我情============="
+    	echo "==========桃花潭水深千尺，不及汪伦送我情============"
         echo "请选择要执行的操作:"
         echo "---------------验证节点相关选项----------------"
         echo "1. 部署节点 install_node"
