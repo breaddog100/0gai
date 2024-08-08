@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20240807002
+current_version=20240808001
 
 update_script() {
     # 指定URL
@@ -471,6 +471,7 @@ function main_menu() {
     	echo "验证者节点：8C64G1T，存储节点：4C16G1T"
     	echo "感谢以下无私的分享者："
     	echo "草边河 发现并验证了卸载老节点的bug"
+        echo "Jack Putin 帮助解决拼写错误"
     	echo "==========桃花潭水深千尺，不及汪伦送我情============"
         echo "请选择要执行的操作:"
         echo "---------------验证节点相关选项----------------"
@@ -496,7 +497,7 @@ function main_menu() {
         echo "23. 停止存储节点 stop_storage_node"
         echo "24. 启动存储节点 start_storage_node"
         echo "25. 修改RPC update_storage_rpc"
-        echo "26. 更新合约 update_store_contract"
+        echo "26. 更新合约 update_storage_contract"
         echo "21618. 卸载存储节点 uninstall_storage_node"
         echo "--------------------其他--------------------"
         echo "51618. 卸载老节点 uninstall_old_node"
@@ -526,7 +527,7 @@ function main_menu() {
         23) stop_storage_node ;;
         24) start_storage_node ;;
         25) update_storage_rpc ;;
-        26) update_store_contract ;;
+        26) update_storage_contract ;;
         21618) uninstall_storage_node ;;
 
         51618) uninstall_old_node ;;
