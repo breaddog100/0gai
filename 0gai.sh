@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20240811005
+current_version=20240811006
 
 update_script() {
     # 指定URL
@@ -196,18 +196,18 @@ function add_validator() {
 	  --details="Support by breaddog" \
 	  --gas=auto \
 	  --gas-prices=1.4
-
-	  
 }
 
 # 停止验证节点
 function stop_node(){
+    echo "正在停止节点..."
 	sudo systemctl stop 0gchaind
 	echo "节点已停止..."
 }
 
 # 启动验证节点
 function start_node(){
+    echo "正在启动节点..."
 	sudo systemctl start 0gchaind
 	echo "节点已启动..."
 }
@@ -387,8 +387,8 @@ function stop_storage_node(){
 function start_storage_node(){
     echo "正在启动节点..."
     read -p "存储节点名称: " storage_node_name
-    read -p "EVM钱包私钥(不含0x): " minerkey
-    sed -i "s/miner_key = \"\"/miner_key = \"$minerkey\"/" $HOME/0g-storage-node/run/config.toml
+    #read -p "EVM钱包私钥(不含0x): " minerkey
+    #sed -i "s/miner_key = \"\"/miner_key = \"$minerkey\"/" $HOME/0g-storage-node/run/config.toml
     #RPC_ADDR=$(grep 'blockchain_rpc_endpoint' $HOME/0g-storage-node/run/config.toml | cut -d '"' -f 2)
 	cd $HOME/0g-storage-node/run
 	screen -dmS zgs_$storage_node_name $HOME/0g-storage-node/target/release/zgs_node --config config.toml
