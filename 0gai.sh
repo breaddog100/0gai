@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20240811003
+current_version=20240811004
 
 update_script() {
     # 指定URL
@@ -546,6 +546,7 @@ function main_menu() {
     	echo "感谢以下无私的分享者："
     	echo "草边河 发现并验证了卸载老节点的bug"
         echo "Jack Putin 帮助解决拼写错误"
+        echo "su qian 提供了最新的存储节点合约"
     	echo "==========桃花潭水深千尺，不及汪伦送我情============"
         echo "请选择要执行的操作:"
         echo "---------------验证节点相关选项----------------"
