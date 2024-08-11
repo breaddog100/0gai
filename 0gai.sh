@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20240808001
+current_version=20240811001
 
 update_script() {
     # 指定URL
@@ -305,12 +305,13 @@ function install_storage_node() {
     fi
     
     # 克隆仓库
-    git clone -b v0.3.4 https://github.com/0glabs/0g-storage-node.git
+    git clone https://github.com/0glabs/0g-storage-node.git
 	#进入对应目录构建
 	cd 0g-storage-node
 	git submodule update --init
 	# 构建存储节点代码
 	cargo build --release
+
 	RPC_ADDR="https://jsonrpc.0g-test.paknodesarmy.xyz/"
     RPC_ADDR="https://og-testnet-jsonrpc.itrocket.net"
     RPC_ADDR="https://t0g.brightlystake.com/evm"
@@ -442,6 +443,41 @@ function update_storage_contract(){
     view_storage_logs
 }
 
+function check_and_upgrade {
+    # 进入项目目录
+    project_folder="0g-storage-node"
+
+    cd ~/$project_folder || { echo "Directory ~/project_folder does not exist."; exit 1; }
+
+    # 获取本地版本
+    local_version=$(git describe --tags --abbrev=0)
+
+    # 获取远程版本
+    git fetch --tags
+    remote_version=$(git describe --tags `git rev-list --tags --max-count=1`)
+
+    echo "本地程序版本: $local_version"
+    echo "官方程序版本: $remote_version"
+
+    # 比较版本，如果本地版本低于远程版本，则询问用户是否进行升级
+    if [ "$local_version" != "$remote_version" ]; then
+        read -p "发现官方发布了新的程序版本，是否要升级到： $remote_version? (y/n): " confirm
+        if [[ "$confirm" =~ ^[Yy]$ ]]; then
+            echo "正在升级..."
+            stop_storage_node
+            git checkout $remote_version
+            git submodule update --init --recursive
+            cargo build --release
+            start_storage_node
+            echo "升级完成，当前本地程序版本： $remote_version."
+        else
+            echo "取消升级，当前本地程序版本： $local_version."
+        fi
+    else
+        echo "已经是最新版本: $local_version."
+    fi
+}
+
 # 卸载老节点功能
 function uninstall_old_node() {
     echo "本功能是卸载之前的0gAI节点，请先备份好钱包等资产数据！如果没有参与上一期的0gAI测试，无需运行。"
@@ -496,8 +532,9 @@ function main_menu() {
         echo "22. 查看存储节点日志 view_storage_logs"
         echo "23. 停止存储节点 stop_storage_node"
         echo "24. 启动存储节点 start_storage_node"
-        echo "25. 修改RPC update_storage_rpc"
-        echo "26. 更新合约 update_storage_contract"
+        echo "25. 修改存储节点RPC update_storage_rpc"
+        echo "26. 更新存储节点合约 update_storage_contract"
+        echo "27. 升级存储节点 check_and_upgrade"
         echo "21618. 卸载存储节点 uninstall_storage_node"
         echo "--------------------其他--------------------"
         echo "51618. 卸载老节点 uninstall_old_node"
@@ -528,6 +565,7 @@ function main_menu() {
         24) start_storage_node ;;
         25) update_storage_rpc ;;
         26) update_storage_contract ;;
+        27) check_and_upgrade ;;
         21618) uninstall_storage_node ;;
 
         51618) uninstall_old_node ;;
