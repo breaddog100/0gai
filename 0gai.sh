@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20240811004
+current_version=20240811005
 
 update_script() {
     # 指定URL
@@ -377,6 +377,7 @@ function update_storage_rpc(){
 
 # 停止存储节点
 function stop_storage_node(){
+    echo "正在停止节点..."
     read -p "存储节点名称: " storage_node_name
 	screen -S zgs_$storage_node_name -X quit
 	echo "节点已停止..."
@@ -384,6 +385,7 @@ function stop_storage_node(){
 
 # 启动存储节点
 function start_storage_node(){
+    echo "正在启动节点..."
     read -p "存储节点名称: " storage_node_name
     read -p "EVM钱包私钥(不含0x): " minerkey
     sed -i "s/miner_key = \"\"/miner_key = \"$minerkey\"/" $HOME/0g-storage-node/run/config.toml
@@ -469,10 +471,11 @@ function update_storage_contract(){
     # Mine Contract: 0x1785c8683b3c527618eFfF78d876d9dCB4b70285
     sed -i "s|^# *mine_contract_address = \".*\"|mine_contract_address = \"0x1785c8683b3c527618eFfF78d876d9dCB4b70285\"|" $HOME/0g-storage-node/run/config.toml
     # Deployed Block Number: 595059
-    sed -i "s|^# *log_sync_start_block_number = 0|log_sync_start_block_number = 595059|" $HOME/0g-storage-node/run/config.toml
+    sed -i "s|^# *log_sync_start_block_number = .*|log_sync_start_block_number = 595059|" $HOME/0g-storage-node/run/config.toml
+
     sed -i "s| *log_contract_address = \".*\"|log_contract_address = \"0x0460aA47b41a66694c0a73f667a1b795A5ED3556\"|" $HOME/0g-storage-node/run/config.toml
     sed -i "s| *mine_contract_address = \".*\"|mine_contract_address = \"0x1785c8683b3c527618eFfF78d876d9dCB4b70285\"|" $HOME/0g-storage-node/run/config.toml
-    sed -i "s| *log_sync_start_block_number = 0|log_sync_start_block_number = 595059|" $HOME/0g-storage-node/run/config.toml
+    sed -i "s| *log_sync_start_block_number = .*|log_sync_start_block_number = 595059|" $HOME/0g-storage-node/run/config.toml
     stop_storage_node
     mv $HOME/0g-storage-node/run/db $HOME/0g-storage-node/run/db.bak.$(date +%Y%m%d)
     echo "已将db目录修改为db.bak，如果启动正常可以删除该目录，命令为：rm -rf $HOME/0g-storage-node/run/db.bak"
@@ -547,6 +550,7 @@ function main_menu() {
     	echo "草边河 发现并验证了卸载老节点的bug"
         echo "Jack Putin 帮助解决拼写错误"
         echo "su qian 提供了最新的存储节点合约"
+        echo "Jack 发现合约高度更新bug"
     	echo "==========桃花潭水深千尺，不及汪伦送我情============"
         echo "请选择要执行的操作:"
         echo "---------------验证节点相关选项----------------"
