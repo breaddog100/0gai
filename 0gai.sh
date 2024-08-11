@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20240811001
+current_version=20240811002
 
 update_script() {
     # 指定URL
@@ -71,7 +71,7 @@ function install_node() {
     source $HOME/.bash_profile
     
     # 下载代码
-    git clone -b v0.2.3 https://github.com/0glabs/0g-chain.git
+    git clone https://github.com/0glabs/0g-chain.git
     ./0g-chain/networks/testnet/install.sh
     source ~/.profile
     
@@ -353,7 +353,7 @@ function start_storage_node(){
     read -p "EVM钱包私钥(不含0x): " minerkey
     sed -i "s/miner_key = \"\"/miner_key = \"$minerkey\"/" $HOME/0g-storage-node/run/config.toml
     #RPC_ADDR=$(grep 'blockchain_rpc_endpoint' $HOME/0g-storage-node/run/config.toml | cut -d '"' -f 2)
-	cd 0g-storage-node/run
+	cd $HOME/0g-storage-node/run
 	screen -dmS zgs_$storage_node_name $HOME/0g-storage-node/target/release/zgs_node --config config.toml
 	echo "节点已启动..."
 }
