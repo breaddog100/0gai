@@ -265,7 +265,41 @@ function download_snap(){
     check_sync_status
 }
 
-#####################################################################################
+function check_and_upgrade_0gchain {
+    # 进入项目目录
+    project_folder="0g-chain"
+
+    cd ~/$project_folder || { echo "Directory ~/$project_folder does not exist."; exit 1; }
+
+    # 获取本地版本
+    local_version=$(git describe --tags --abbrev=0)
+
+    # 获取远程版本
+    git fetch --tags
+    remote_version=$(git describe --tags `git rev-list --tags --max-count=1`)
+
+    echo "本地程序版本: $local_version"
+    echo "官方程序版本: $remote_version"
+
+    # 比较版本，如果本地版本低于远程版本，则询问用户是否进行升级
+    if [ "$local_version" != "$remote_version" ]; then
+        read -p "发现官方发布了新的程序版本，是否要升级到： $remote_version? (y/n): " confirm
+        if [[ "$confirm" =~ ^[Yy]$ ]]; then
+            echo "正在升级..."
+            stop_node
+            ./networks/testnet/install.sh
+            source ~/.profile
+            start_node
+            echo "升级完成，当前本地程序版本： $remote_version."
+        else
+            echo "取消升级，当前本地程序版本： $local_version."
+        fi
+    else
+        echo "已经是最新版本: $local_version."
+    fi
+}
+
+##############################存储节点############################################
 
 # 部署存储节点
 function install_storage_node() {
@@ -320,8 +354,9 @@ function install_storage_node() {
     sed -i "s|^# *rpc_listen_address = \".*\"|rpc_listen_address = \"0.0.0.0:5678\"|" $HOME/0g-storage-node/run/config.toml
     sed -i "s|^# *network_boot_nodes = \[\]|network_boot_nodes = \[\"/ip4/54.219.26.22/udp/1234/p2p/16Uiu2HAmTVDGNhkHD98zDnJxQWu3i1FL1aFYeh9wiQTNu4pDCgps\",\"/ip4/52.52.127.117/udp/1234/p2p/16Uiu2HAkzRjxK2gorngB1Xq84qDrT4hSVznYDHj6BkbaE4SGx9oS\",\"/ip4/18.167.69.68/udp/1234/p2p/16Uiu2HAm2k6ua2mGgvZ8rTMV8GhpW71aVzkQWy7D37TTDuLCpgmX\"\]|" $HOME/0g-storage-node/run/config.toml
     sed -i "s|^# *log_sync_start_block_number = 0|log_sync_start_block_number = 401178|" $HOME/0g-storage-node/run/config.toml
-	sed -i "s|^# *log_contract_address = \".*\"|log_contract_address = \"0xB7e39604f47c0e4a6Ad092a281c1A8429c2440d3\"|" $HOME/0g-storage-node/run/config.toml
-    sed -i "s|^# *mine_contract_address = \".*\"|mine_contract_address = \"0x6176AA095C47A7F79deE2ea473B77ebf50035421\"|" $HOME/0g-storage-node/run/config.toml
+	sed -i "s|^# *log_contract_address = \".*\"|log_contract_address = \"0x0460aA47b41a66694c0a73f667a1b795A5ED3556\"|" $HOME/0g-storage-node/run/config.toml
+    sed -i "s|^# *mine_contract_address = \".*\"|mine_contract_address = \"0x1785c8683b3c527618eFfF78d876d9dCB4b70285\"|" $HOME/0g-storage-node/run/config.toml
+    sed -i "s|^# *log_sync_start_block_number = 0|log_sync_start_block_number = 595059|" $HOME/0g-storage-node/run/config.toml
     sed -i "s|^# *network_enr_address = \".*\"|network_enr_address = \"$PUBLIC_IP\"|" $HOME/0g-storage-node/run/config.toml
     sed -i "s|^# *blockchain_rpc_endpoint = \".*\"|blockchain_rpc_endpoint = \"$RPC_ADDR\"|" $HOME/0g-storage-node/run/config.toml
 	#后台运行
@@ -429,12 +464,15 @@ function service_ports(){
 
 # 更新存储节点合约
 function update_storage_contract(){
-    sed -i "s|^# *log_contract_address = \".*\"|log_contract_address = \"0xB7e39604f47c0e4a6Ad092a281c1A8429c2440d3\"|" $HOME/0g-storage-node/run/config.toml
-    sed -i "s|^# *mine_contract_address = \".*\"|mine_contract_address = \"0x6176AA095C47A7F79deE2ea473B77ebf50035421\"|" $HOME/0g-storage-node/run/config.toml
-    sed -i "s|^# *log_sync_start_block_number = 0|log_sync_start_block_number = 401178|" $HOME/0g-storage-node/run/config.toml
-    sed -i "s| *log_contract_address = \".*\"|log_contract_address = \"0xB7e39604f47c0e4a6Ad092a281c1A8429c2440d3\"|" $HOME/0g-storage-node/run/config.toml
-    sed -i "s| *mine_contract_address = \".*\"|mine_contract_address = \"0x6176AA095C47A7F79deE2ea473B77ebf50035421\"|" $HOME/0g-storage-node/run/config.toml
-    sed -i "s| *log_sync_start_block_number = 0|log_sync_start_block_number = 401178|" $HOME/0g-storage-node/run/config.toml
+    # Flow Contract: 0x0460aA47b41a66694c0a73f667a1b795A5ED3556
+    sed -i "s|^# *log_contract_address = \".*\"|log_contract_address = \"0x0460aA47b41a66694c0a73f667a1b795A5ED3556\"|" $HOME/0g-storage-node/run/config.toml
+    # Mine Contract: 0x1785c8683b3c527618eFfF78d876d9dCB4b70285
+    sed -i "s|^# *mine_contract_address = \".*\"|mine_contract_address = \"0x1785c8683b3c527618eFfF78d876d9dCB4b70285\"|" $HOME/0g-storage-node/run/config.toml
+    # Deployed Block Number: 595059
+    sed -i "s|^# *log_sync_start_block_number = 0|log_sync_start_block_number = 595059|" $HOME/0g-storage-node/run/config.toml
+    sed -i "s| *log_contract_address = \".*\"|log_contract_address = \"0x0460aA47b41a66694c0a73f667a1b795A5ED3556\"|" $HOME/0g-storage-node/run/config.toml
+    sed -i "s| *mine_contract_address = \".*\"|mine_contract_address = \"0x1785c8683b3c527618eFfF78d876d9dCB4b70285\"|" $HOME/0g-storage-node/run/config.toml
+    sed -i "s| *log_sync_start_block_number = 0|log_sync_start_block_number = 595059|" $HOME/0g-storage-node/run/config.toml
     stop_storage_node
     mv $HOME/0g-storage-node/run/db $HOME/0g-storage-node/run/db.bak.$(date +%Y%m%d)
     echo "已将db目录修改为db.bak，如果启动正常可以删除该目录，命令为：rm -rf $HOME/0g-storage-node/run/db.bak"
@@ -447,7 +485,7 @@ function check_and_upgrade {
     # 进入项目目录
     project_folder="0g-storage-node"
 
-    cd ~/$project_folder || { echo "Directory ~/project_folder does not exist."; exit 1; }
+    cd ~/$project_folder || { echo "Directory ~/$project_folder does not exist."; exit 1; }
 
     # 获取本地版本
     local_version=$(git describe --tags --abbrev=0)
