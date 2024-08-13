@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20240811006
+current_version=20240813001
 
 update_script() {
     # 指定URL
@@ -287,7 +287,10 @@ function check_and_upgrade_0gchain {
         if [[ "$confirm" =~ ^[Yy]$ ]]; then
             echo "正在升级..."
             stop_node
-            ./networks/testnet/install.sh
+            git fetch --all --tags
+            git checkout tags/$remote_version
+            mv $HOME/go/bin/0gchaind $HOME/go/bin/0gchaind.bak0.2.3
+            make install
             source ~/.profile
             start_node
             echo "升级完成，当前本地程序版本： $remote_version."
