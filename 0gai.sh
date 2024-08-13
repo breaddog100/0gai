@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20240813001
+current_version=20240813002
 
 update_script() {
     # 指定URL
@@ -72,20 +72,21 @@ function install_node() {
     
     # 下载代码
     git clone https://github.com/0glabs/0g-chain.git
-    ./0g-chain/networks/testnet/install.sh
+    cd 0g-chain
+    make install
     source ~/.profile
     
     0gchaind init $NODE_MONIKER --chain-id zgtendermint_16600-2
     0gchaind config chain-id zgtendermint_16600-2
     
     rm ~/.0gchain/config/genesis.json
-    wget -P ~/.0gchain/config https://github.com/0glabs/0g-chain/releases/download/v0.2.3/genesis.json
+    wget -P ~/.0gchain/config https://public-snapshot-storage-develop.s3.ap-southeast-1.amazonaws.com/zerog/zgtendermint_16600-2/genesis.json
     0gchaind validate-genesis
-    wget -O $HOME/.0gchain/config/addrbook.json https://snapshots-testnet.nodejumper.io/0g-testnet/addrbook.json
+    wget -O $HOME/.0gchain/config/addrbook.json https://server-5.itrocket.net/testnet/og/addrbook.json
     
     # 配置种子
-    SEEDS="265120a9bb170cf21198aabf88f7908c9944897c@54.241.167.190:26656,497f865d8a0f6c830e2b73009a01b3edefb22577@54.176.175.48:26656,ffc49903241a4e442465ec78b8f421c56b3ae3d4@54.193.250.204:26656,f37bc8623bfa4d8e519207b965a24a288f3213d8@18.166.164.232:26656"
-    PEERS="4d98cf3cb2a61238a0b1557596cdc4b306472cb9@95.216.228.91:13456,c44baa3836d07f9ed9a832f819bcf19fda67cc5d@95.216.42.217:13456,81987895a11f6689ada254c6b57932ab7ed909b6@54.241.167.190:26656,010fb4de28667725a4fef26cdc7f9452cc34b16d@54.176.175.48:26656,e9b4bc203197b62cc7e6a80a64742e752f4210d5@54.193.250.204:26656,68b9145889e7576b652ca68d985826abd46ad660@18.166.164.232:26656"
+    SEEDS="265120a9bb170cf21198aabf88f7908c9944897c@54.241.167.190:26656,497f865d8a0f6c830e2b73009a01b3edefb22577@54.176.175.48:26656,ffc49903241a4e442465ec78b8f421c56b3ae3d4@54.193.250.204:26656,f37bc8623bfa4d8e519207b965a24a288f3213d8@18.166.164.232:26656,8f21742ea5487da6e0697ba7d7b36961d3599567@og-testnet-seed.itrocket.net:47656"
+    PEERS="4d98cf3cb2a61238a0b1557596cdc4b306472cb9@95.216.228.91:13456,c44baa3836d07f9ed9a832f819bcf19fda67cc5d@95.216.42.217:13456,81987895a11f6689ada254c6b57932ab7ed909b6@54.241.167.190:26656,010fb4de28667725a4fef26cdc7f9452cc34b16d@54.176.175.48:26656,e9b4bc203197b62cc7e6a80a64742e752f4210d5@54.193.250.204:26656,68b9145889e7576b652ca68d985826abd46ad660@18.166.164.232:26656,80fa309afab4a35323018ac70a40a446d3ae9caf@og-testnet-peer.itrocket.net:11656,9dbb76298d1625ebcc47d08fa7e7911967b63b61@45.159.221.57:26656,a2caf26a86a4989e26943e496173e7b22831c88a@198.7.116.141:12656,0ae19691f97f5797694c253bc06c79c8b58ea2a8@85.190.242.81:26656,c0d35052a7612d992f721b25f186a5d1f569405e@195.201.194.188:26656,8bd2797c8ece0f099a1c31f98e5648d192d8cd54@38.242.146.162:26656,c85eaa1b3cbe4d7fb19138e5a5dc4111491e6e03@115.78.229.59:10156,fa08f548e8d34b6c72ed9e7495a59ae6be656da8@109.199.97.178:12656,ffdf7a8cc6dbbd22e25b1590f61da149349bdc2e@135.181.229.206:26656,56ee4c337848a70a43887531b5f1ca211bac1a34@185.187.170.125:26656"
     sed -i "s/seeds = \"\"/seeds = \"$SEEDS\"/" $HOME/.0gchain/config/config.toml
     sed -i "s/persistent_peers = \"\"/persistent_peers = \"$PEERS\"/" $HOME/.0gchain/config/config.toml
     
